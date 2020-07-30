@@ -1,0 +1,16 @@
+{
+  "heading": "",
+  "next": "",
+  "catalog": {
+    "url": "",
+    "selector": "",
+    "skip": 0
+  },
+  "title": "",
+  "content": "",
+  "limit": 0,
+  "split": false,
+  "wait": 0,
+  "append": false,
+  "headless": true
+}

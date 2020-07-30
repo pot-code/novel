@@ -1,0 +1,27 @@
+{
+  "dependencies": {
+    "ajv": "^6.12.3",
+    "chalk": "^4.1.0",
+    "ora": "^4.0.5",
+    "progress": "^2.0.3",
+    "puppeteer-core": "^5.2.1",
+    "yargs": "^15.4.1"
+  },
+  "name": "novel",
+  "version": "1.0.0",
+  "description": "A CLI util for novel",
+  "main": "index.js",
+  "bin": {
+    "novel": "index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/npm/cli.git"
+  },
+  "keywords": [
+    "CLI",
+    "novel"
+  ],
+  "author": "pot-code",
+  "license": "MIT"
+}
