@@ -3,28 +3,31 @@ const argv = require('yargs');
 const { cmd_download_novel, export_template } = require('./cmd/download');
 
 argv
-  .usage('novel <command> [options]')
-  .version('1.0.1')
+  .scriptName('novel')
+  .usage('Usage: $0 <command> [options]')
+  .version()
+  .alias('help', 'h')
+  .alias('version', 'v')
   .command(
     'download',
-    'download novel with given config',
+    'Download novel with given config',
     (yargs) =>
       yargs
         .option('config', {
           alias: 'c',
           type: 'string',
-          describe: 'config file path',
+          describe: 'Config file path',
         })
         .option('out', {
           alias: 'o',
           type: 'string',
-          describe: 'save destination(default to cwd/output.txt)',
+          describe: 'Save location(default to $(pwd)/output.txt)',
           default: 'output.txt',
         })
         .option('template', {
           alias: 't',
           type: 'boolean',
-          describe: 'export empty template(default to stdout)',
+          describe: 'Export config template(default to stdout)',
         })
         .conflicts('config', 'template')
         .check((args) => {
@@ -36,10 +39,10 @@ argv
     (parsed) => {
       const { config, out, template } = parsed;
       if (template) {
-        process.stdout.write(export_template() + '\n');
+        export_template();
         return;
       }
       cmd_download_novel(config, out);
     }
   )
-  .demandCommand(1, 'Use "novel <command> --help" for more information about a given command.').argv;
+  .demandCommand(1, 'Pass --help to see all available commands and options.').argv;

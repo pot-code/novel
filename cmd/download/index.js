@@ -128,7 +128,9 @@ async function download_novel(config, out, onchange) {
       //   spinner.prefixText = yellow("[Potential loop detected]");
       // }
       const [title, lines] = await extract_content(url, config, page);
-      onchange(value, title, lines);
+      if (onchange) {
+        onchange(value, title, lines);
+      }
       await write_chapter(title, lines, out, empty_filter);
       if (wait !== null && wait > 0) {
         await sleep(wait);
@@ -190,10 +192,15 @@ async function cmd_download_novel(config_path, dest) {
   await close_browser();
 }
 
-const template = require('./config.template.json');
-
 function export_template() {
-  return JSON.stringify(template, null, 2);
+  const template = require('./config.template.json');
+  const str = JSON.stringify(template, null, 2);
+
+  process.stdout.write(str + '\n', (err) => {
+    if (err) {
+      console.error(red(`Failed to export tempalte: ${err.message}`));
+    }
+  });
 }
 
 module.exports = {
