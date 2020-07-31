@@ -8,7 +8,7 @@
     "yargs": "^15.4.1"
   },
   "name": "@pot-code/novel",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A CLI util for novel",
   "main": "index.js",
   "bin": {
