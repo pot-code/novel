@@ -13,7 +13,7 @@ async function run() {
   const page = await browser.newPage();
 
   async function handle_navigate(value) {
-    const { url, current } = value;
+    const { url } = value;
     try {
       const [title, lines] = await extract_content(url, workerData, page);
       return {
@@ -23,14 +23,14 @@ async function run() {
       };
     } catch (e) {
       const now = new Date();
-      const timestamp = `${now.getFullYear()}${now.getMonth()}${
-        now.getDate() + 1
-      }${now.getHours()}${now.getMinutes()}${now.getSeconds()}`;
+      const timestamp = `${now.getFullYear()}${
+        now.getMonth() + 1
+      }${now.getDate()}${now.getHours()}${now.getMinutes()}${now.getSeconds()}`;
       const screenshot_path = resolve(`shot_${timestamp}.jpeg`);
       await page.screenshot({
         path: screenshot_path,
       });
-      e.message = `Error while processing #${current}(${url}): ${e.message}
+      e.message = `Error while processing '${url}': ${e.message}
     screenshot has been saved to '${screenshot_path}'`;
       parentPort.postMessage(set_error(e));
       process.exit(1); // exit on error
@@ -43,8 +43,8 @@ async function run() {
     switch (type) {
       case NAVIGATE:
         const data = await handle_navigate(payload);
-        parentPort.postMessage(set_data(data));
         await sleep(wait);
+        parentPort.postMessage(set_data(data));
         break;
       case DONE:
         process.exit(0);

@@ -211,6 +211,7 @@ async function concurrent_download_novel(config, out, worker_number, onchange) {
         onchange(meta, title, lines, -1);
       }
       await write_chapter(title, lines, out, empty_filter);
+      contents[cursor] = null; // leave it to GC
       cursor++;
     }
   }

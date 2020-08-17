@@ -67,7 +67,17 @@ async function get_browser(headless) {
   if (browser_instance === null) {
     browser_instance = await puppeteer.launch({
       headless,
-      executablePath: '/Applications/Chromium.app/Contents/MacOS/Chromium',
+      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-javascript-harmony-shipping',
+      ],
     });
   }
   return browser_instance;
