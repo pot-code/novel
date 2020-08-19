@@ -155,6 +155,9 @@ async function concurrent_download_novel(config, out, worker_number, onchange) {
   }
 
   const total = value.total; // total number of chapters
+  if (total === 0) {
+    return;
+  }
   const contents = new Array(total + 1);
   const workers = new Array(worker_number);
   const worker_init_data = Object.assign(
@@ -186,6 +189,12 @@ async function concurrent_download_novel(config, out, worker_number, onchange) {
     workers[i] = wrapper;
   }
 
+  async function stop_workers() {
+    for (let wrapper of workers) {
+      await wrapper.worker.terminate();
+    }
+  }
+
   let cursor = 1;
   while (cursor < total) {
     await sleep(300);
@@ -199,9 +208,7 @@ async function concurrent_download_novel(config, out, worker_number, onchange) {
         worker_wrapper.status = WorkerStatus.RUNNING;
         worker_wrapper.worker.postMessage(navigate(value));
       } else if (worker_wrapper.status === WorkerStatus.ERR) {
-        for (let wrapper of workers) {
-          await wrapper.worker.terminate();
-        }
+        await stop_workers();
         throw worker_wrapper.error;
       }
     }
@@ -215,6 +222,8 @@ async function concurrent_download_novel(config, out, worker_number, onchange) {
       cursor++;
     }
   }
+  // stop workers
+  await stop_workers();
 }
 
 async function parse_config_file(path) {
