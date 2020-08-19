@@ -117,3 +117,6 @@ dist
 .DS_Store
 yarn.lock
 package-lock.json
+*.txt
+./config.json
+*.jpeg

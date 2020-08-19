@@ -3,7 +3,7 @@ const fs = require('fs').promises;
 const { blueBright, greenBright, red } = require('chalk');
 const os = require('os');
 const { Worker } = require('worker_threads');
-const { join } = require('path');
+const { join, resolve } = require('path');
 
 const { empty_filter } = require('./filter');
 const {
@@ -14,6 +14,7 @@ const {
   extract_content,
   sleep,
   write_chapter,
+  timestamp,
 } = require('../../lib');
 const { ajv, validator_with_catalog, validator_with_heading } = require('./validate');
 const { DATA, navigate, set_done, ERROR } = require('./action');
@@ -44,17 +45,18 @@ async function* get_chapter_with_catalog_gen(config, page) {
 
   const goto = goto_with_retry(page, 3, 10 * 1e3);
   await goto(catalog_url);
-  const chapter_list = await page.evaluate((item) => {
+  let chapter_list = await page.evaluate((item) => {
     return Array.from(document.querySelectorAll(item)).map((e) => e.href);
   }, selector);
+  chapter_list = chapter_list.slice(skip);
 
   const length = chapter_list.length;
-  const ending = limit === Infinity ? length : skip + limit > length ? length : skip + limit;
-  const total = limit === Infinity ? chapter_list.length : limit;
+  const total = limit === Infinity ? length : limit > length ? length : limit;
+  // const total = limit === Infinity ? chapter_list.length : limit;
   yield { url: '', total, current: 0 };
-  for (let i = skip; i < ending; i++) {
+  for (let i = 0; i < total; i++) {
     const url = chapter_list[i];
-    yield { url, total, current: i + 1 };
+    yield { url, total, current: i };
   }
 }
 
@@ -62,9 +64,9 @@ async function* get_chapter_with_heading_gen(config, page) {
   const { heading, next, limit } = config;
 
   let url = heading;
-  let current = 1;
+  let current = 0;
   const total = limit === Infinity ? -1 : limit;
-  yield { url: '', total, current: 0 };
+  yield { url: '', total, current };
   while (true) {
     yield { url, total, current };
     url = await page.evaluate((next) => {
@@ -125,9 +127,13 @@ async function download_novel(config, out, onchange) {
       if (wait !== null && wait > 0) {
         await sleep(wait);
       }
-      // last_url = url;
     } catch (e) {
-      e.message = `Error while processing #${current}(${url}): ${e.message}`;
+      const screenshot_path = resolve(`shot_${timestamp()}.jpeg`);
+      await page.screenshot({
+        path: screenshot_path,
+      });
+      e.message = `Error while processing '${url}': ${e.message}
+    screenshot has been saved to '${screenshot_path}'`;
       throw e;
     }
   }
@@ -158,7 +164,7 @@ async function concurrent_download_novel(config, out, worker_number, onchange) {
   if (total === 0) {
     return;
   }
-  const contents = new Array(total + 1);
+  const contents = new Array(total);
   const workers = new Array(worker_number);
   const worker_init_data = Object.assign(
     {
@@ -195,7 +201,7 @@ async function concurrent_download_novel(config, out, worker_number, onchange) {
     }
   }
 
-  let cursor = 1;
+  let cursor = 0;
   while (cursor < total) {
     await sleep(300);
     for (let worker_wrapper of workers) {
@@ -267,7 +273,7 @@ async function cmd_download_novel(config_path, dest, worker_number) {
     try {
       await download_novel(config, out, ({ current, total }, title, lines) => {
         spinner.color = SPINNER_COLORS[current % SPINNER_COLORS.length];
-        spinner.text = `[${current}/${total}]Fetching ${title}[ln:${lines.length}]`;
+        spinner.text = `[${current + 1}/${total}]Fetching ${title}[ln:${lines.length}]`;
       });
       spinner.succeed(greenBright(`novel has been saved to '${dest}'`));
     } catch (e) {
@@ -281,7 +287,7 @@ async function cmd_download_novel(config_path, dest, worker_number) {
     try {
       await concurrent_download_novel(config, out, worker_number, ({ current, total }, title, lines, thread_id) => {
         spinner.color = SPINNER_COLORS[current % SPINNER_COLORS.length];
-        spinner.text = `[${current}/${total}]Fetching ${title}[ln:${lines.length}]`;
+        spinner.text = `[${current + 1}/${total}]Fetching ${title}[ln:${lines.length}]`;
       });
       spinner.succeed(greenBright(`novel has been saved to '${dest}'`));
     } catch (e) {

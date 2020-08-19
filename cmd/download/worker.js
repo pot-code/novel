@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer-core');
 const { parentPort, workerData } = require('worker_threads');
 const { resolve } = require('path');
 
-const { extract_content, sleep } = require('../../lib');
+const { extract_content, sleep, timestamp } = require('../../lib');
 const { set_error, NAVIGATE, DONE, set_data } = require('./action');
 
 async function run() {
@@ -22,11 +22,7 @@ async function run() {
         lines,
       };
     } catch (e) {
-      const now = new Date();
-      const timestamp = `${now.getFullYear()}${
-        now.getMonth() + 1
-      }${now.getDate()}${now.getHours()}${now.getMinutes()}${now.getSeconds()}`;
-      const screenshot_path = resolve(`shot_${timestamp}.jpeg`);
+      const screenshot_path = resolve(`shot_${timestamp()}.jpeg`);
       await page.screenshot({
         path: screenshot_path,
       });
