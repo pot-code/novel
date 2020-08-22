@@ -2,6 +2,7 @@
   "dependencies": {
     "ajv": "^6.12.3",
     "chalk": "^4.1.0",
+    "inquirer": "^7.3.3",
     "ora": "^4.0.5",
     "progress": "^2.0.3",
     "puppeteer-core": "^5.2.1",

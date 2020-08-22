@@ -1,9 +1,11 @@
 const ora = require('ora');
 const fs = require('fs').promises;
+const { F_OK } = require('fs').constants;
 const { blueBright, greenBright, red } = require('chalk');
 const os = require('os');
 const { Worker } = require('worker_threads');
 const { join, resolve } = require('path');
+const inquirer = require('inquirer');
 
 const { empty_filter } = require('./filter');
 const {
@@ -106,8 +108,6 @@ function validate_config(config) {
  * @param {*} onchange will be called while iterating chapters
  */
 async function download_novel(config, out, onchange) {
-  validate_config(config);
-
   const { wait, headless } = config;
   const page = await get_page(headless);
   const chapter_ite = await get_chapter_iterator(config, page);
@@ -146,8 +146,6 @@ async function download_novel(config, out, onchange) {
  * @param {*} onchange will be called while iterating chapters
  */
 async function concurrent_download_novel(config, out, worker_number, onchange) {
-  validate_config(config);
-
   const { headless } = config;
   const browser = await get_browser(headless);
   const page = await get_page(headless);
@@ -228,7 +226,6 @@ async function concurrent_download_novel(config, out, worker_number, onchange) {
       cursor++;
     }
   }
-  // stop workers
   await stop_workers();
 }
 
@@ -242,10 +239,35 @@ async function parse_config_file(path) {
   }
 }
 
+async function create_output(dest) {
+  let append = false;
+  // check existence
+  try {
+    await fs.access(dest, F_OK);
+    const answers = await inquirer.prompt([
+      {
+        type: 'list',
+        name: 'op',
+        message: `'${dest}' already exists, what to do now`,
+        choices: ['overwrite', 'append', 'abort'],
+      },
+    ]);
+    if (answers['op'] === 'append') {
+      append = true;
+    } else if (answers['op'] === 'abort') {
+      process.exit(0);
+    }
+  } catch (e) {
+    // output file not exists
+  }
+  return await fs.open(dest, append ? 'a' : 'w');
+}
+
 async function cmd_download_novel(config_path, dest, worker_number) {
   let config = null;
   try {
     config = await parse_config_file(config_path);
+    validate_config(config);
   } catch (error) {
     console.error(red(error.message));
     process.exit(1);
@@ -259,10 +281,9 @@ async function cmd_download_novel(config_path, dest, worker_number) {
     config.limit = limit;
   }
 
-  const { append } = config;
   let out;
   try {
-    out = await fs.open(dest, append ? 'a' : 'w');
+    out = await create_output(dest);
   } catch (e) {
     console.error(red('Failed to create output file: ', e.message));
     return;
