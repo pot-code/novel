@@ -230,14 +230,20 @@ async function concurrent_download_novel(config, out, worker_number, onchange) {
   await stop_workers();
 }
 
-async function parse_config_file(path) {
+async function read_config(path) {
   const buf = await fs.readFile(path);
+  let config = null;
   try {
-    return JSON.parse(buf.toString());
+    config = JSON.parse(buf.toString());
+    validate_config(config);
   } catch (error) {
-    error.message = `Failed to parse config file(${path}): ${error.message})`;
+    error.message = `Failed to parse config file(${path}): ${error.message}`;
     throw error;
   }
+
+  let limit = config.limit === -1 ? Infinity : config.limit;
+  config.limit = limit;
+  return config;
 }
 
 async function create_output(dest) {
@@ -267,19 +273,17 @@ async function create_output(dest) {
 async function cmd_download_novel(config_path, dest, worker_number, debug) {
   let config = null;
   try {
-    config = await parse_config_file(config_path);
-    validate_config(config);
+    config = await read_config(config_path);
   } catch (error) {
     console.error(red(error.message));
     process.exit(1);
   }
 
-  let limit = config.limit === -1 ? Infinity : config.limit;
-  if (limit === 0) {
+  // if debug is on, expose the underlaying browser(headless: false)
+  config['headless'] = !debug;
+  if (config.limit === 0) {
     console.log(greenBright('Nothing to fetch(limit is 0)'));
     return;
-  } else {
-    config.limit = limit;
   }
 
   let out;
@@ -290,8 +294,6 @@ async function cmd_download_novel(config_path, dest, worker_number, debug) {
     return;
   }
 
-  // if debug is on, expose the underlaying browser(headless: false)
-  config['headless'] = !debug;
   if (worker_number === 0 || !has_catalog(config)) {
     const spinner = ora(blueBright('Preparing...')).start();
     try {
