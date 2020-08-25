@@ -10,7 +10,5 @@
   "content": "",
   "limit": 0,
   "split": false,
-  "wait": 0,
-  "append": false,
-  "headless": true
+  "wait": 0
 }

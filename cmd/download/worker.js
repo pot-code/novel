@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer-core');
 const { parentPort, workerData } = require('worker_threads');
 const { resolve } = require('path');
 
-const { extract_content, sleep, timestamp } = require('../../lib');
+const { extract_content, sleep, timestamp, get_page } = require('../../lib');
 const { set_error, NAVIGATE, DONE, set_data } = require('./action');
 
 async function run() {
@@ -10,7 +10,7 @@ async function run() {
   const browser = await puppeteer.connect({
     browserWSEndpoint: endpoint,
   });
-  const page = await browser.newPage();
+  const page = await get_page(browser, false);
 
   async function handle_navigate(value) {
     const { url } = value;

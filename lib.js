@@ -79,6 +79,7 @@ async function get_browser(headless) {
         '--disable-javascript-harmony-shipping',
       ],
     });
+    page_instance = (await browser_instance.pages())[0];
   }
   return browser_instance;
 }
@@ -117,14 +118,13 @@ async function extract_content(url, config, page) {
   );
 }
 
-async function get_page(headless, singleton = true) {
-  await get_browser(headless);
-  if (!singleton) {
-    const page = await browser_instance.newPage();
+async function get_page(browser, reuse = true) {
+  if (!reuse) {
+    const page = await browser.newPage();
     await page.setUserAgent(BROWSER_AGENT);
     return page;
   } else if (!page_instance) {
-    page_instance = await browser_instance.newPage();
+    page_instance = await browser.newPage();
     await page_instance.setUserAgent(BROWSER_AGENT);
   }
   return page_instance;

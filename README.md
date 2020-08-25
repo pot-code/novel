@@ -26,6 +26,7 @@ novel <command> [option]
 - `--out,-o`，指定输出文件，默认导出到当前执行命令的目录，文件名为 `out.txt`
 - `--template`，让 CLI 工具导出一份空配置文件，默认导出到 stdout，该选项和 `--config` 不能同时出现，择其一使用
 - `--worker,-w`，设置抓取的线程数（不超过 CPU 的最大线程数）。多线程抓取，速度更快，仅支持 config 文件提供了 `catalog` 部分的情况。注意散热，抓取过程 CPU 占用较高，过热容易导致抓取失败、报错
+- `--debug,-D`，设置 headless 为 `false`，方便观察
 
 配置文件说明：
 
@@ -43,12 +44,10 @@ novel <command> [option]
   "limit": 0, // 限制抓取章节个数，-1 为不限制
   "split": false, // 保留选项，暂无作用
   "wait": 0, // 每次抓取的等待间隔，用于反反爬虫
-  "append": false, // 默认输出文件时会清空目标文件内容，指定此选项为 true 则让当前输出追加到目标文件的末尾
-  "headless": true // 因为程序需要开启一个 chromium 进程，此选项设置是否隐藏它的界面展示，为 true 则隐藏
 }
 ```
 
 ## 已知问题
 
 - 只支持 MacOS
-- 固定浏览器执行路径：`/Applications/Chromium.app/Contents/MacOS/Chromium`，后期支持 CLI 选项更改
+- 固定浏览器执行路径：`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`，后期支持 CLI 选项更改

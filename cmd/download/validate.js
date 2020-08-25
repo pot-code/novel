@@ -8,7 +8,7 @@ const BASE_REQUIRED = [
   "wait",
   // "dest",
   "append",
-  "headless",
+  // "headless",
 ];
 const BASE_PROP = {
   content: {

@@ -109,7 +109,8 @@ function validate_config(config) {
  */
 async function download_novel(config, out, onchange) {
   const { wait, headless } = config;
-  const page = await get_page(headless);
+  const browser = await get_browser(headless);
+  const page = await get_page(browser);
   const chapter_ite = await get_chapter_iterator(config, page);
   await chapter_ite.next(); // skip initial value
   while (true) {
@@ -148,7 +149,7 @@ async function download_novel(config, out, onchange) {
 async function concurrent_download_novel(config, out, worker_number, onchange) {
   const { headless } = config;
   const browser = await get_browser(headless);
-  const page = await get_page(headless);
+  const page = await get_page(browser);
   const endpoint = browser.wsEndpoint();
   const chapter_ite = await get_chapter_iterator(config, page);
 
@@ -263,7 +264,7 @@ async function create_output(dest) {
   return await fs.open(dest, append ? 'a' : 'w');
 }
 
-async function cmd_download_novel(config_path, dest, worker_number) {
+async function cmd_download_novel(config_path, dest, worker_number, debug) {
   let config = null;
   try {
     config = await parse_config_file(config_path);
@@ -289,6 +290,8 @@ async function cmd_download_novel(config_path, dest, worker_number) {
     return;
   }
 
+  // if debug is on, expose the underlaying browser(headless: false)
+  config['headless'] = !debug;
   if (worker_number === 0 || !has_catalog(config)) {
     const spinner = ora(blueBright('Preparing...')).start();
     try {

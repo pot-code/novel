@@ -37,6 +37,12 @@ argv
           describe:
             'set the number of workers(default to core count), if you set it too high, it will be clamped to core count',
         })
+        .option('debug', {
+          alias: 'D',
+          type: 'boolean',
+          default: false,
+          describe: 'set headless to false',
+        })
         .conflicts('config', 'template')
         .check((args) => {
           if (!args.template && !args.config) {
@@ -51,12 +57,12 @@ argv
           return true;
         }),
     (parsed) => {
-      const { config, out, template, worker: worker_number } = parsed;
+      const { config, out, template, worker: worker_number, debug } = parsed;
       if (template) {
         export_template();
         return;
       }
-      cmd_download_novel(config, out, worker_number);
+      cmd_download_novel(config, out, worker_number, debug);
     }
   )
   .demandCommand(1, 'Pass --help to see all available commands and options.').argv;
