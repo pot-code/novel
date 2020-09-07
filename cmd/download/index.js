@@ -18,8 +18,8 @@ const {
   write_chapter,
   timestamp,
 } = require('../../lib');
-const { ajv, validator_with_catalog, validator_with_heading } = require('./validate');
-const { DATA, navigate, set_done, ERROR } = require('./action');
+const { validate_config, load_config, combine_args } = require('./config');
+const { DATA, navigate, set_done, ERROR } = require('./comm');
 
 const SPINNER_COLORS = ['blue', 'cyan', 'gray', 'green', 'magenta', 'red', 'white', 'yellow'];
 
@@ -92,14 +92,6 @@ function has_catalog(config) {
 
 async function get_chapter_iterator(config, page) {
   return has_catalog(config) ? chapter_gen_with_catalog(config, page) : chapter_gen_with_heading(config, page);
-}
-
-function validate_config(config) {
-  const validator = config.catalog ? validator_with_catalog : validator_with_heading;
-  const valid = validator(config);
-  if (!valid) {
-    throw new Error('Failed to validate config: ' + ajv.errorsText(validator.errors));
-  }
 }
 
 /**
@@ -231,14 +223,6 @@ async function concurrent_download(config, out, worker_number, onchange) {
   await stop_workers();
 }
 
-async function load_config(path) {
-  const buf = await fs.readFile(path);
-  let config = JSON.parse(buf.toString());
-  let limit = config.limit === -1 ? Infinity : config.limit;
-  config.limit = limit;
-  return config;
-}
-
 async function create_output(output_path) {
   let append = false;
   // check existence
@@ -261,17 +245,6 @@ async function create_output(output_path) {
     // output file not exists
   }
   return await fs.open(output_path, append ? 'a' : 'w');
-}
-
-function combine_args(config, args) {
-  const { debug } = args;
-  return Object.assign(
-    {
-      // if debug is on, expose the underlaying browser(headless: false)
-      headless: !debug,
-    },
-    config
-  );
 }
 
 async function run(config_path, output_path, args) {
