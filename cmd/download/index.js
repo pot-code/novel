@@ -41,7 +41,7 @@ class WorkerWrapper {
   }
 }
 
-async function* get_chapter_with_catalog_gen(config, page) {
+async function* chapter_gen_with_catalog(config, page) {
   const { limit } = config;
   const { url: catalog_url, selector, skip } = config.catalog;
 
@@ -62,7 +62,7 @@ async function* get_chapter_with_catalog_gen(config, page) {
   }
 }
 
-async function* get_chapter_with_heading_gen(config, page) {
+async function* chapter_gen_with_heading(config, page) {
   const { heading, next, limit } = config;
 
   let url = heading;
@@ -91,7 +91,7 @@ function has_catalog(config) {
 }
 
 async function get_chapter_iterator(config, page) {
-  return has_catalog(config) ? get_chapter_with_catalog_gen(config, page) : get_chapter_with_heading_gen(config, page);
+  return has_catalog(config) ? chapter_gen_with_catalog(config, page) : chapter_gen_with_heading(config, page);
 }
 
 function validate_config(config) {
@@ -107,18 +107,19 @@ function validate_config(config) {
  * @param {*} out output stream
  * @param {*} onchange will be called while iterating chapters
  */
-async function download_novel(config, out, onchange) {
+async function download(config, out, onchange) {
   const { wait, headless } = config;
   const browser = await get_browser(headless);
   const page = await get_page(browser);
   const chapter_ite = await get_chapter_iterator(config, page);
+
   await chapter_ite.next(); // skip initial value
   while (true) {
     let { value, done } = await chapter_ite.next();
     if (done) {
       break;
     }
-    const { url, current } = value;
+    const { url } = value;
     try {
       const [title, lines] = await extract_content(url, config, page);
       if (onchange) {
@@ -146,11 +147,10 @@ async function download_novel(config, out, onchange) {
  * @param {*} out output stream
  * @param {*} onchange will be called while iterating chapters
  */
-async function concurrent_download_novel(config, out, worker_number, onchange) {
+async function concurrent_download(config, out, worker_number, onchange) {
   const { headless } = config;
   const browser = await get_browser(headless);
   const page = await get_page(browser);
-  const endpoint = browser.wsEndpoint();
   const chapter_ite = await get_chapter_iterator(config, page);
 
   // check immediate done
@@ -165,6 +165,7 @@ async function concurrent_download_novel(config, out, worker_number, onchange) {
   }
   const contents = new Array(total);
   const workers = new Array(worker_number);
+  const endpoint = browser.wsEndpoint();
   const worker_init_data = Object.assign(
     {
       endpoint,
@@ -230,32 +231,24 @@ async function concurrent_download_novel(config, out, worker_number, onchange) {
   await stop_workers();
 }
 
-async function read_config(path) {
+async function load_config(path) {
   const buf = await fs.readFile(path);
-  let config = null;
-  try {
-    config = JSON.parse(buf.toString());
-    validate_config(config);
-  } catch (error) {
-    error.message = `Failed to parse config file(${path}): ${error.message}`;
-    throw error;
-  }
-
+  let config = JSON.parse(buf.toString());
   let limit = config.limit === -1 ? Infinity : config.limit;
   config.limit = limit;
   return config;
 }
 
-async function create_output(dest) {
+async function create_output(output_path) {
   let append = false;
   // check existence
   try {
-    await fs.access(dest, F_OK);
+    await fs.access(output_path, F_OK);
     const answers = await inquirer.prompt([
       {
         type: 'list',
         name: 'op',
-        message: `'${dest}' already exists, what to do now`,
+        message: `'${output_path}' already exists, what to do now`,
         choices: ['overwrite', 'append', 'abort'],
       },
     ]);
@@ -267,20 +260,38 @@ async function create_output(dest) {
   } catch (e) {
     // output file not exists
   }
-  return await fs.open(dest, append ? 'a' : 'w');
+  return await fs.open(output_path, append ? 'a' : 'w');
 }
 
-async function cmd_download_novel(config_path, dest, worker_number, debug) {
+function combine_args(config, args) {
+  const { debug } = args;
+  return Object.assign(
+    {
+      // if debug is on, expose the underlaying browser(headless: false)
+      headless: !debug,
+    },
+    config
+  );
+}
+
+async function run(config_path, output_path, args) {
   let config = null;
   try {
-    config = await read_config(config_path);
+    config = await load_config(config_path);
   } catch (error) {
-    console.error(red(error.message));
+    console.error(red(`Failed to load config file(${config_path}): ${error.message}`));
     process.exit(1);
   }
 
-  // if debug is on, expose the underlaying browser(headless: false)
-  config['headless'] = !debug;
+  config = combine_args(config, args);
+
+  try {
+    validate_config(config);
+  } catch (error) {
+    console.error(red(`Failed to validate config file(${config_path}): ${error.message}`));
+    return;
+  }
+
   if (config.limit === 0) {
     console.log(greenBright('Nothing to fetch(limit is 0)'));
     return;
@@ -288,20 +299,22 @@ async function cmd_download_novel(config_path, dest, worker_number, debug) {
 
   let out;
   try {
-    out = await create_output(dest);
+    out = await create_output(output_path);
   } catch (e) {
     console.error(red('Failed to create output file: ', e.message));
     return;
   }
 
+  // TODO: opti
+  let { worker_number } = args;
   if (worker_number === 0 || !has_catalog(config)) {
     const spinner = ora(blueBright('Preparing...')).start();
     try {
-      await download_novel(config, out, ({ current, total }, title, lines) => {
+      await download(config, out, ({ current, total }, title, lines) => {
         spinner.color = SPINNER_COLORS[current % SPINNER_COLORS.length];
         spinner.text = `[${current + 1}/${total}]Fetching ${title}[ln:${lines.length}]`;
       });
-      spinner.succeed(greenBright(`novel has been saved to '${dest}'`));
+      spinner.succeed(greenBright(`novel has been saved to '${output_path}'`));
     } catch (e) {
       spinner.fail(red(e.message));
     }
@@ -311,15 +324,16 @@ async function cmd_download_novel(config_path, dest, worker_number, debug) {
 
     const spinner = ora(blueBright('Preparing...')).start();
     try {
-      await concurrent_download_novel(config, out, worker_number, ({ current, total }, title, lines, thread_id) => {
+      await concurrent_download(config, out, worker_number, ({ current, total }, title, lines) => {
         spinner.color = SPINNER_COLORS[current % SPINNER_COLORS.length];
         spinner.text = `[${current + 1}/${total}]Fetching ${title}[ln:${lines.length}]`;
       });
-      spinner.succeed(greenBright(`novel has been saved to '${dest}'`));
+      spinner.succeed(greenBright(`novel has been saved to '${output_path}'`));
     } catch (e) {
       spinner.fail(red(e.message));
     }
   }
+  await out.close();
   await close_browser();
 }
 
@@ -335,7 +349,6 @@ function export_template() {
 }
 
 module.exports = {
-  download_novel,
-  cmd_download_novel,
+  run,
   export_template,
 };

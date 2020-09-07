@@ -7,7 +7,7 @@ const BASE_REQUIRED = [
   "limit",
   "wait",
   // "dest",
-  "append",
+  // "append",
   // "headless",
 ];
 const BASE_PROP = {

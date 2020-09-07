@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 const argv = require('yargs');
 const os = require('os');
-const { cmd_download_novel, export_template } = require('./cmd/download');
+const cmd_download = require('./cmd/download');
 
 argv
   .scriptName('novel')
@@ -57,12 +57,15 @@ argv
           return true;
         }),
     (parsed) => {
-      const { config, out, template, worker: worker_number, debug } = parsed;
+      const { config: config_path, out, template, worker: worker_number, debug } = parsed;
       if (template) {
-        export_template();
+        cmd_download.export_template();
         return;
       }
-      cmd_download_novel(config, out, worker_number, debug);
+      cmd_download.run(config_path, out, {
+        worker_number,
+        debug,
+      });
     }
   )
   .demandCommand(1, 'Pass --help to see all available commands and options.').argv;
