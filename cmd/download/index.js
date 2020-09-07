@@ -62,10 +62,10 @@ async function* chapter_gen_with_catalog(config, page) {
   }
 }
 
-async function* chapter_gen_with_heading(config, page) {
-  const { heading, next, limit } = config;
+async function* chapter_gen_with_manual(config, page) {
+  const { limit } = config;
+  let { url, next } = config.manual;
 
-  let url = heading;
   let current = 0;
   const total = limit === Infinity ? -1 : limit;
   yield { url: '', total, current };
@@ -91,7 +91,7 @@ function has_catalog(config) {
 }
 
 async function get_chapter_iterator(config, page) {
-  return has_catalog(config) ? chapter_gen_with_catalog(config, page) : chapter_gen_with_heading(config, page);
+  return has_catalog(config) ? chapter_gen_with_catalog(config, page) : chapter_gen_with_manual(config, page);
 }
 
 /**

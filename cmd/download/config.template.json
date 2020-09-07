@@ -1,6 +1,8 @@
 {
-  "heading": "",
-  "next": "",
+  "manual": {
+    "url": "",
+    "next": ""
+  },
   "catalog": {
     "url": "",
     "selector": "",

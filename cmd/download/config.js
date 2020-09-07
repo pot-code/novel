@@ -3,15 +3,7 @@ const fs = require('fs').promises;
 
 const ajv = new Ajv();
 
-const BASE_REQUIRED = [
-  'title',
-  'content',
-  'limit',
-  'wait',
-  // "dest",
-  // "append",
-  // "headless",
-];
+const BASE_REQUIRED = ['title', 'content', 'limit', 'wait'];
 const BASE_PROP = {
   content: {
     type: 'string',
@@ -23,37 +15,37 @@ const BASE_PROP = {
     type: 'integer',
     minimum: -1,
   },
-  // split: {
-  //   type: 'boolean',
-  // },
   wait: {
     type: 'integer',
     minimum: 0,
-  },
-  // dest: {
-  //   type: "string",
-  // },
-  append: {
-    type: 'boolean',
   },
   headless: {
     type: 'boolean',
   },
 };
 
-const validator_with_heading = ajv.compile({
-  required: [...BASE_REQUIRED, 'heading', 'next'],
+const manual_validator = ajv.compile({
+  required: [...BASE_REQUIRED, 'manual'],
   properties: {
-    heading: {
-      type: 'string',
-    },
-    next: {
-      type: 'string',
+    manual: {
+      type: 'object',
+      required: ['url', 'next'],
+      properties: {
+        url: {
+          type: 'string',
+          minLength: 1,
+        },
+        next: {
+          type: 'string',
+          minLength: 1,
+        },
+      },
     },
     ...BASE_PROP,
   },
 });
-const validator_with_catalog = ajv.compile({
+
+const catalog_validator = ajv.compile({
   required: [...BASE_REQUIRED, 'catalog'],
   properties: {
     catalog: {
@@ -79,7 +71,7 @@ const validator_with_catalog = ajv.compile({
 });
 
 function validate_config(config) {
-  const validator = config.catalog ? validator_with_catalog : validator_with_heading;
+  const validator = config.catalog ? catalog_validator : manual_validator;
   const valid = validator(config);
   if (!valid) {
     throw new Error(ajv.errorsText(validator.errors));

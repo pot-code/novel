@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer-core');
+const assert = require('assert');
 
 const BROWSER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15';
@@ -22,9 +23,10 @@ function with_retry(fn, times, delay = 0) {
 }
 
 function goto_with_retry(page, times, timeout) {
-  return with_retry(async (url) => {
+  return with_retry(async (url, options) => {
     await page.goto(url, {
       timeout,
+      ...options,
     });
   }, times);
 }
@@ -91,7 +93,9 @@ async function get_browser(headless) {
  */
 async function extract_content(url, config, page) {
   const goto = goto_with_retry(page, 3, 10 * 1e3);
-  await goto(url);
+  await goto(url, {
+    waitUntil: 'domcontentloaded',
+  });
 
   const { content, title } = config;
   return await page.evaluate(
@@ -119,6 +123,7 @@ async function extract_content(url, config, page) {
 }
 
 async function get_page(browser, reuse = true) {
+  assert.notEqual(browser, null, 'browser should not be null or undefined');
   if (!reuse) {
     const page = await browser.newPage();
     await page.setUserAgent(BROWSER_AGENT);
