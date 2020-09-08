@@ -3,7 +3,7 @@ const { parentPort, workerData } = require('worker_threads');
 const { resolve } = require('path');
 
 const { extract_content, sleep, timestamp, get_page } = require('../../lib');
-const { set_error, NAVIGATE, DONE, set_data } = require('./action');
+const { set_error, NAVIGATE, DONE, set_data } = require('./comm');
 
 async function run() {
   const { endpoint, wait } = workerData;
