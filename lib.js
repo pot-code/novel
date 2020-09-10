@@ -1,5 +1,6 @@
 const puppeteer = require('puppeteer-core');
 const assert = require('assert');
+const os = require('os');
 
 const BROWSER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15';
@@ -47,19 +48,20 @@ async function sleep(t) {
  */
 async function write_chapter(title, lines, out, filter) {
   const length = lines.length;
+  const NEW_LINE = os.EOL;
 
   // write title
   if (title) {
-    await out.write(title + '\n');
+    await out.write(title + NEW_LINE);
   }
   // write body
   for (let i = 0; i < length; i++) {
     if (filter && filter(lines[i])) {
       continue;
     }
-    await out.write('    ' + lines[i] + '\n');
+    await out.write('    ' + lines[i] + NEW_LINE);
   }
-  await out.write('\n');
+  await out.write(NEW_LINE);
 }
 
 let browser_instance = null;
