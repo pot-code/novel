@@ -99,7 +99,7 @@ async function get_chapter_iterator(config, page) {
  * @param {*} out output stream
  * @param {*} onchange will be called while iterating chapters
  */
-async function download(config, out, onchange) {
+async function download(config, out, worker_number, onchange) {
   const { wait, headless } = config;
   const browser = await get_browser(headless);
   const page = await get_page(browser);
@@ -278,33 +278,26 @@ async function run(config_path, output_path, args) {
     return;
   }
 
-  // TODO: opti
   let { worker_number } = args;
+  let download_fn = null;
   if (worker_number === 0 || !has_catalog(config)) {
-    const spinner = ora(blueBright('Preparing...')).start();
-    try {
-      await download(config, out, ({ current, total }, title, lines) => {
-        spinner.color = SPINNER_COLORS[current % SPINNER_COLORS.length];
-        spinner.text = `[${current + 1}/${total}]Fetching ${title}[ln:${lines.length}]`;
-      });
-      spinner.succeed(greenBright(`novel has been saved to '${output_path}'`));
-    } catch (e) {
-      spinner.fail(red(e.message));
-    }
+    download_fn = download;
   } else {
+    download_fn = concurrent_download;
+
     const cpu_count = os.cpus().length;
     worker_number = worker_number > cpu_count ? cpu_count : worker_number;
+  }
 
-    const spinner = ora(blueBright('Preparing...')).start();
-    try {
-      await concurrent_download(config, out, worker_number, ({ current, total }, title, lines) => {
-        spinner.color = SPINNER_COLORS[current % SPINNER_COLORS.length];
-        spinner.text = `[${current + 1}/${total}]Fetching ${title}[ln:${lines.length}]`;
-      });
-      spinner.succeed(greenBright(`novel has been saved to '${output_path}'`));
-    } catch (e) {
-      spinner.fail(red(e.message));
-    }
+  const spinner = ora(blueBright('Preparing...')).start();
+  try {
+    await download_fn(config, out, worker_number, ({ current, total }, title, lines) => {
+      spinner.color = SPINNER_COLORS[current % SPINNER_COLORS.length];
+      spinner.text = `[${current + 1}/${total}]Fetching ${title}[ln:${lines.length}]`;
+    });
+    spinner.succeed(greenBright(`data has been saved to '${output_path}'`));
+  } catch (e) {
+    spinner.fail(red(e.message));
   }
   await out.close();
   await close_browser();
