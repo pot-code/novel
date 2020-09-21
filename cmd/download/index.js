@@ -2,7 +2,6 @@ const ora = require('ora');
 const fs = require('fs').promises;
 const { F_OK } = require('fs').constants;
 const { blueBright, greenBright, red } = require('chalk');
-const os = require('os');
 const { Worker } = require('worker_threads');
 const { join, resolve } = require('path');
 const inquirer = require('inquirer');
@@ -18,7 +17,7 @@ const {
   write_chapter,
   timestamp,
 } = require('../../lib');
-const { validate_config, load_config, combine_args } = require('./config');
+const { validate_config, load_config, combine_args, has_catalog, has_manual } = require('./config');
 const { DATA, navigate, set_done, ERROR } = require('./comm');
 
 const SPINNER_COLORS = ['blue', 'cyan', 'gray', 'green', 'magenta', 'red', 'white', 'yellow'];
@@ -85,13 +84,19 @@ async function* chapter_gen_with_manual(config, page) {
   }
 }
 
-function has_catalog(config) {
-  const { catalog } = config;
-  return !!catalog && !!catalog.url;
-}
-
 async function get_chapter_iterator(config, page) {
   return has_catalog(config) ? chapter_gen_with_catalog(config, page) : chapter_gen_with_manual(config, page);
+}
+
+function get_download_fn(config) {
+  const { worker_number } = config;
+  let download_fn = null;
+  if (worker_number === 0 || has_manual(config)) {
+    download_fn = download;
+  } else {
+    download_fn = concurrent_download;
+  }
+  return download_fn;
 }
 
 /**
@@ -99,9 +104,9 @@ async function get_chapter_iterator(config, page) {
  * @param {*} out output stream
  * @param {*} onchange will be called while iterating chapters
  */
-async function download(config, out, worker_number, onchange) {
-  const { wait, headless } = config;
-  const browser = await get_browser(headless);
+async function download(config, out, onchange) {
+  const { wait, headless, chrome_executable } = config;
+  const browser = await get_browser(headless, chrome_executable);
   const page = await get_page(browser);
   const chapter_ite = await get_chapter_iterator(config, page);
 
@@ -139,9 +144,9 @@ async function download(config, out, worker_number, onchange) {
  * @param {*} out output stream
  * @param {*} onchange will be called while iterating chapters
  */
-async function concurrent_download(config, out, worker_number, onchange) {
-  const { headless } = config;
-  const browser = await get_browser(headless);
+async function concurrent_download(config, out, onchange) {
+  const { headless, worker_number, chrome_executable } = config;
+  const browser = await get_browser(headless, chrome_executable);
   const page = await get_page(browser);
   const chapter_ite = await get_chapter_iterator(config, page);
 
@@ -250,7 +255,7 @@ async function create_output(output_path) {
 async function run(config_path, output_path, args) {
   let config = null;
   try {
-    config = await load_config(config_path);
+    config = load_config(config_path);
   } catch (error) {
     console.error(red(`Failed to load config file(${config_path}): ${error.message}`));
     process.exit(1);
@@ -270,6 +275,11 @@ async function run(config_path, output_path, args) {
     return;
   }
 
+  if (config.chrome_executable === '') {
+    console.error(red('Failed to locate the chrome executable, please specify the path using --path/-p argument'));
+    return;
+  }
+
   let out;
   try {
     out = await create_output(output_path);
@@ -278,20 +288,10 @@ async function run(config_path, output_path, args) {
     return;
   }
 
-  let { worker_number } = args;
-  let download_fn = null;
-  if (worker_number === 0 || !has_catalog(config)) {
-    download_fn = download;
-  } else {
-    download_fn = concurrent_download;
-
-    const cpu_count = os.cpus().length;
-    worker_number = worker_number > cpu_count ? cpu_count : worker_number;
-  }
-
+  const download_fn = get_download_fn(config);
   const spinner = ora(blueBright('Preparing...')).start();
   try {
-    await download_fn(config, out, worker_number, ({ current, total }, title, lines) => {
+    await download_fn(config, out, ({ current, total }, title, lines) => {
       spinner.color = SPINNER_COLORS[current % SPINNER_COLORS.length];
       spinner.text = `[${current + 1}/${total}]Fetching ${title}[ln:${lines.length}]`;
     });

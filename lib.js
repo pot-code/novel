@@ -1,9 +1,19 @@
 const puppeteer = require('puppeteer-core');
 const assert = require('assert');
 const os = require('os');
+const fs = require('fs');
 
 const BROWSER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15';
+
+const CHROME_SEARCH_MAP = {
+  win32: ['C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'],
+  linux: [],
+  darwin: [
+    // '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/Applications/Chromium.app/Contents/MacOS/Chromium',
+  ],
+};
 
 /**
  * @param {*} fn function to be wrapped
@@ -67,11 +77,32 @@ async function write_chapter(title, lines, out, filter) {
 let browser_instance = null;
 let page_instance = null;
 
-async function get_browser(headless) {
+function find_chrome_executable() {
+  const platform = os.platform();
+
+  function _predict(path) {
+    return fs.existsSync(path);
+  }
+  if (platform in CHROME_SEARCH_MAP) {
+    const group = CHROME_SEARCH_MAP[platform];
+    const idx = group.findIndex(_predict);
+    if (idx > -1) {
+      return group[idx];
+    }
+  }
+  return '';
+}
+
+/**
+ *
+ * @param {*} headless
+ * @param {*} exe_path chrome/chromium executable path
+ */
+async function get_browser(headless, exe_path) {
   if (browser_instance === null) {
     browser_instance = await puppeteer.launch({
       headless,
-      executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      executablePath: exe_path,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -125,7 +156,7 @@ async function extract_content(url, config, page) {
 }
 
 async function get_page(browser, reuse = true) {
-  assert.notEqual(browser, null, 'browser should not be null or undefined');
+  assert.notStrictEqual(browser, null, 'browser should not be null or undefined');
   if (!reuse) {
     const page = await browser.newPage();
     await page.setUserAgent(BROWSER_AGENT);
@@ -157,6 +188,7 @@ module.exports = {
   get_browser,
   close_browser,
   goto_with_retry,
+  find_chrome_executable,
   extract_content,
   timestamp,
 };

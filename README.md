@@ -27,6 +27,7 @@ novel <command> [option]
 - `--template`，让 CLI 工具导出一份空配置文件，默认导出到 stdout，该选项和 `--config` 不能同时出现，择其一使用
 - `--worker,-w`，设置抓取的线程数（不超过 CPU 的最大线程数）。多线程抓取，速度更快，仅支持 config 文件提供了 `catalog` 部分的情况。注意散热，抓取过程 CPU 占用较高，过热容易导致抓取失败、报错
 - `--debug,-D`，设置 headless 为 `false`，方便排查问题
+- `--path,-p`，手动指定 chrome 的执行路径（如果自带的扫描路径不满足需求的话）
 
 配置文件说明：
 
@@ -47,8 +48,3 @@ novel <command> [option]
   "wait": 0, // 每次抓取的等待间隔，用于反反爬虫
 }
 ```
-
-## 已知问题
-
-- 只支持 MacOS
-- 固定浏览器执行路径：`/Applications/Google Chrome.app/Contents/MacOS/Google Chrome`，后期支持 CLI 选项更改

@@ -1,5 +1,8 @@
 const Ajv = require('ajv');
-const fs = require('fs').promises;
+const os = require('os');
+const fs = require('fs');
+
+const { find_chrome_executable } = require('../../lib');
 
 const ajv = new Ajv();
 
@@ -18,9 +21,6 @@ const BASE_PROP = {
   wait: {
     type: 'integer',
     minimum: 0,
-  },
-  headless: {
-    type: 'boolean',
   },
 };
 
@@ -79,26 +79,49 @@ function validate_config(config) {
 }
 
 function combine_args(config, args) {
-  const { debug } = args;
+  let { debug, worker_number, path } = args;
+
+  const cpu_count = os.cpus().length;
+  worker_number = worker_number > cpu_count ? cpu_count : worker_number;
+
+  let chrome_executable = path;
+  if (chrome_executable === '' || chrome_executable === undefined) {
+    chrome_executable = find_chrome_executable();
+  }
+
   return Object.assign(
     {
-      // if debug is on, expose the underlaying browser(headless: false)
+      // if debug is on, reveal the underlaying browser(headless: false)
       headless: !debug,
+      worker_number,
+      chrome_executable,
     },
     config
   );
 }
 
-async function load_config(path) {
-  const buf = await fs.readFile(path);
+function load_config(path) {
+  const buf = fs.readFileSync(path);
   let config = JSON.parse(buf.toString());
   let limit = config.limit === -1 ? Infinity : config.limit;
   config.limit = limit;
   return config;
 }
 
+function has_catalog(config) {
+  const { catalog } = config;
+  return !!catalog && !!catalog.url;
+}
+
+function has_manual(config) {
+  const { manual } = config;
+  return !!manual && !!manual.url;
+}
+
 module.exports = {
   validate_config,
   combine_args,
   load_config,
+  has_catalog,
+  has_manual,
 };

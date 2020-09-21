@@ -37,6 +37,12 @@ argv
           describe:
             'set the number of workers(default to core count), if you set it too high, it will be clamped to core count',
         })
+        .option('path', {
+          alias: 'p',
+          type: 'string',
+          describe:
+            'the program will automatically search for Chrome executable according to built-in catalog, provide this argument if the program failed to find the path',
+        })
         .option('debug', {
           alias: 'D',
           type: 'boolean',
@@ -57,7 +63,7 @@ argv
           return true;
         }),
     (parsed) => {
-      const { config: config_path, out, template, worker: worker_number, debug } = parsed;
+      const { config: config_path, out, template, worker: worker_number, debug, path } = parsed;
       if (template) {
         cmd_download.export_template();
         return;
@@ -65,6 +71,7 @@ argv
       cmd_download.run(config_path, out, {
         worker_number,
         debug,
+        path,
       });
     }
   )
