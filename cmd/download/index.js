@@ -1,7 +1,7 @@
 const ora = require('ora');
 const fs = require('fs').promises;
 const { F_OK } = require('fs').constants;
-const { blueBright, greenBright, red } = require('chalk');
+const { blueBright, greenBright, red, magentaBright } = require('chalk');
 const { Worker } = require('worker_threads');
 const { join, resolve } = require('path');
 const inquirer = require('inquirer');
@@ -293,7 +293,10 @@ async function run(config_path, output_path, args) {
   try {
     await download_fn(config, out, ({ current, total }, title, lines) => {
       spinner.color = SPINNER_COLORS[current % SPINNER_COLORS.length];
-      spinner.text = `[${current + 1}/${total}]Fetching ${title}[ln:${lines.length}]`;
+      spinner.text =
+        greenBright(`[${current + 1}/${total}]`) +
+        `Fetching ${magentaBright(title)}` +
+        greenBright(`[ln:${lines.length}]`);
     });
     spinner.succeed(greenBright(`data has been saved to '${output_path}'`));
   } catch (e) {
