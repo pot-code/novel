@@ -10,7 +10,7 @@ const CHROME_SEARCH_MAP = {
   win32: ['C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe'],
   linux: [],
   darwin: [
-    // '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     '/Applications/Chromium.app/Contents/MacOS/Chromium',
   ],
 };
