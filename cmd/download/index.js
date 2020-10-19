@@ -91,7 +91,7 @@ async function get_chapter_iterator(config, page) {
 function get_download_fn(config) {
   const { worker_number } = config;
   let download_fn = null;
-  if (worker_number === 0 || has_manual(config)) {
+  if (worker_number === 0 || !has_catalog(config)) {
     download_fn = download;
   } else {
     download_fn = concurrent_download;
