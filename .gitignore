@@ -121,4 +121,3 @@ package-lock.json
 ./config.json
 *.jpeg
 .vscode
-example.json

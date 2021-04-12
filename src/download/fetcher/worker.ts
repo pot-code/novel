@@ -3,20 +3,15 @@ import { parentPort, workerData } from 'worker_threads';
 
 import { attachBrowser } from '../../util/browser';
 import { sleep } from '../../util/common';
-import { log } from '../../util/log';
 import { DefaultContentExtractor } from '../extract';
 import { WorkerData, WorkerResponse, DownloadTask } from '../types';
-
-const logger = log.child({ module: 'worker', pid: process.pid });
 
 async function main(config: WorkerData) {
   let browser: Browser;
   try {
     browser = await attachBrowser(config.endpoint);
-    log.debug({ endpoint: config.endpoint }, 'browser attached');
   } catch (error) {
-    logger.error({ error: error.message, stack: error.stack }, 'failed to attach to browser');
-    throw error;
+    throw new Error(`failed to attach to browser: ${error.message}`);
   }
 
   const extractor = new DefaultContentExtractor(
@@ -35,10 +30,10 @@ async function main(config: WorkerData) {
         payload: res,
       } as WorkerResponse);
     } catch (error) {
-      logger.error({ error: error.message, stack: error.stack }, 'failed to extract content');
       parentPort.postMessage({
         index: data.index,
         payload: null,
+        error: `failed to extract content: ${error.message}`,
       } as WorkerResponse);
     } finally {
       await sleep(config.delay);

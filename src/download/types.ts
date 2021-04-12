@@ -50,4 +50,5 @@ export type DownloadTask = {
 export type WorkerResponse = {
   index: number;
   payload: ExtractResult;
+  error?: string;
 };

@@ -107,6 +107,7 @@ export class MultiThreadDownloader extends ObservableDownloader {
   onWorkerResponse = (data: WorkerResponse) => {
     if (!data.payload) {
       this.failed++;
+      this.logger.error({ message: data.error, index: data.index }, 'failed task');
       this.emit('fail', data.index);
       return;
     }
@@ -140,8 +141,9 @@ export class MultiThreadDownloader extends ObservableDownloader {
     this.initWorkers();
 
     manager.on('data', this.onWorkerResponse);
-    manager.on('error', () => {
+    manager.on('error', (error) => {
       loop = false;
+      this.logger.error({ stack: error.stack, message: error.message }, 'worker error');
     });
 
     let index = 0;

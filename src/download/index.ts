@@ -5,7 +5,7 @@ import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
 import { download } from './download';
-import template from './config.template.json';
+import template from './template.json';
 import { getLogDst, log, setLevel } from '../util/log';
 import { DIAGNOSE_PATH } from '../constants';
 
@@ -107,6 +107,7 @@ yargs(hideBin(process.argv))
         fs.rmdirSync(DIAGNOSE_PATH, {
           recursive: true,
         });
+        fs.rmSync(getLogDst());
       } catch (error) {
         log.error({ stack: error.stack }, error.message);
         process.stderr.write(`${error.message}, check ${getLogDst()} for more details`);

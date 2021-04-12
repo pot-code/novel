@@ -3,7 +3,6 @@ import { BaseLogger } from 'pino';
 import { Browser, Page } from 'puppeteer-core';
 
 import { USER_AGENT } from '../../util/browser';
-import { log } from '../../util/log';
 import { ExtractResult } from '../types';
 
 export class DefaultContentExtractor {
@@ -36,7 +35,6 @@ export class DefaultContentExtractor {
       });
       return page;
     });
-    this.logger = log.child({ module: DefaultContentExtractor.name });
   }
 
   /**
@@ -47,7 +45,6 @@ export class DefaultContentExtractor {
   async extract(url: string): Promise<ExtractResult> {
     const page = await this.page;
 
-    this.logger.debug({ url }, 'navigating');
     await page.goto(url, {
       waitUntil: 'domcontentloaded',
       timeout: this.timeout,
@@ -79,7 +76,6 @@ export class DefaultContentExtractor {
       throw new Error(ret);
     }
 
-    this.logger.debug({ title: ret[0], lines: ret[1].length }, 'extract result');
     return ret as ExtractResult;
   }
 }
