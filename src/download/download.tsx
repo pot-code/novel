@@ -66,7 +66,7 @@ export async function download(
   process.on('SIGINT', handleTerm);
   process.on('SIGTERM', handleTerm);
 
-  const writer = new DefaultResultWriter(config.url, output);
+  const writer = new DefaultResultWriter(config.url, output, config.limit);
 
   let dataSource: ObservableDataSource<Promise<string>>;
   if (config.list_selector) {

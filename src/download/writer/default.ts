@@ -24,7 +24,11 @@ export class DefaultResultWriter implements ResultWriter {
    * @param dataSource data source
    * @param out write out
    */
-  constructor(private readonly id: string, private readonly out: string) {
+  constructor(
+    private readonly id: string,
+    private readonly out: string,
+    private readonly limit: number,
+  ) {
     this.logger = log.child({ module: DefaultResultWriter.name });
     this.createDir(id);
   }
@@ -44,13 +48,16 @@ export class DefaultResultWriter implements ResultWriter {
 
   flush(): void {
     const dir = this.outDir;
-    const list = readdirSync(dir);
     const tmp = path.join(dir, 'tmp');
     const out = this.out;
 
+    let list = readdirSync(dir);
     list.sort(function (a: string, b: string) {
       return parseInt(a, 10) - parseInt(b, 10);
     });
+    if (list.length > this.limit) {
+      list = list.slice(0, this.limit);
+    }
     for (const p of list) {
       this.logger.debug({ dir, part: p }, 'merging parts');
       appendFileSync(tmp, readFileSync(path.join(dir, p)).toString());
