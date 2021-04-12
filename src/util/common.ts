@@ -27,6 +27,10 @@ function padStart(v: any, length: number, fill: string): string {
   return String(v).padStart(length, fill);
 }
 
+export function getRealIndex(index: number, skip: number): number {
+  return index - skip;
+}
+
 export function timestamp(): string {
   const now = new Date();
   return `${now.getFullYear()}${padStart(now.getMonth() + 1, 2, '0')}${padStart(

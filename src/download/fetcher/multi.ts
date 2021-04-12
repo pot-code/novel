@@ -4,6 +4,7 @@ import path from 'path';
 import { BaseLogger } from 'pino';
 import { Worker } from 'worker_threads';
 
+import { getRealIndex } from '../../util/common';
 import { log } from '../../util/log';
 import {
   DownloadInit,
@@ -98,31 +99,31 @@ export class MultiThreadDownloader extends ObservableDownloader {
   ) {
     super();
     dataSource.once('init', (data: DownloadInit) => {
-      this.emit('init', { total: Math.min(data.total, this.limit) } as DownloadInit);
+      this.emit('init', { total: Math.min(data.total - skip, this.limit) } as DownloadInit);
     });
     this.manager = new WorkerManager();
     this.logger = log.child({ module: MultiThreadDownloader.name });
   }
 
   onWorkerResponse = (data: WorkerResponse) => {
+    const realIndex = data.index; // because the index is set as real before, the worker will keep it intact
     if (!data.payload) {
       this.failed++;
-      this.logger.error({ message: data.error, index: data.index }, 'failed task');
-      this.emit('fail', data.index);
+      this.logger.error({ error: data.error, index: realIndex }, 'failed task');
+      this.emit('fail', realIndex);
       return;
     }
 
     try {
-      this.writer.writePart(data.index, data.payload);
+      this.writer.writePart(realIndex, data.payload);
       this.emit('progress', {
-        index: data.index - this.skip, // minus skip offset
+        index: realIndex,
         title: data.payload[0],
       } as DownloadProgress);
     } catch (error) {
       this.logger.error(
         {
-          index: data.index,
-          data: data,
+          index: realIndex,
           error: error.message,
           stack: error.stack,
         },
@@ -161,17 +162,18 @@ export class MultiThreadDownloader extends ObservableDownloader {
           continue;
         }
 
+        const realIndex = getRealIndex(index, this.skip);
         this.logger.debug({ url }, 'processing url');
-        if (writer.exists(index)) {
+        if (writer.exists(realIndex)) {
           this.logger.info({ index: index }, 'skipping part');
           this.emit('progress', {
-            index: index - this.skip,
+            index: realIndex,
             title: 'skip',
           } as DownloadProgress);
         } else {
           const worker = await manager.getWorker();
           worker.postMessage({
-            index: index,
+            index: realIndex,
             url: url,
           } as DownloadTask);
         }

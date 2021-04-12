@@ -1,6 +1,6 @@
 import { BaseLogger } from 'pino';
 
-import { sleep } from '../../util/common';
+import { getRealIndex, sleep } from '../../util/common';
 import { log } from '../../util/log';
 import { DefaultContentExtractor } from '../extract';
 import {
@@ -29,7 +29,7 @@ export class SingleThreadDownloader extends ObservableDownloader {
   ) {
     super();
     dataSource.once('init', (data: DownloadInit) => {
-      this.emit('init', { total: Math.min(data.total, this.limit) } as DownloadInit);
+      this.emit('init', { total: Math.min(data.total - skip, this.limit) } as DownloadInit);
     });
     this.logger = log.child({ module: SingleThreadDownloader.name });
   }
@@ -52,17 +52,18 @@ export class SingleThreadDownloader extends ObservableDownloader {
           continue;
         }
 
-        if (writer.exists(index)) {
+        const realIndex = getRealIndex(index, this.skip);
+        if (writer.exists(realIndex)) {
           this.logger.info({ index: index }, 'skipping part');
           this.emit('progress', {
-            index: index - this.skip,
+            index: realIndex,
             title: 'skip',
           } as DownloadProgress);
         } else {
           const res = await this.extractor.extract(url);
           writer.writePart(index, res);
           this.emit('progress', {
-            index: index - this.skip,
+            index: realIndex,
             title: res[0],
           } as DownloadProgress);
           await sleep(this.delay);
