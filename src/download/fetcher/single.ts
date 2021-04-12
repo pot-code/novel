@@ -86,7 +86,7 @@ export class SingleThreadDownloader extends ObservableDownloader {
     try {
       writer.flush();
     } catch (error) {
-      this.logger.error({ error: error.message }, 'failed to combine results');
+      this.logger.error({ error: error.message }, 'failed to write results');
       throw error;
     }
   }

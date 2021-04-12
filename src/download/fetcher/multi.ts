@@ -193,7 +193,12 @@ export class MultiThreadDownloader extends ObservableDownloader {
     if (this.failed > 0) {
       throw new Error(`${this.failed} tasks failed`);
     }
-    writer.flush();
+    try {
+      writer.flush();
+    } catch (error) {
+      this.logger.error({ error: error.message }, 'failed to write results');
+      throw error;
+    }
   }
 
   private initWorkers() {

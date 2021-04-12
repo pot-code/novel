@@ -95,7 +95,7 @@ export const Grid = ({ subject }: { subject: EventEmitter }) => {
 
   return (
     <Box flexDirection="column">
-      <Box justifyContent="space-around" borderColor="cyanBright" borderStyle="classic">
+      <Box justifyContent="space-around" borderColor="blue" borderStyle="double">
         <Text>
           <Text color="greenBright">●</Text> - success
         </Text>
@@ -106,7 +106,7 @@ export const Grid = ({ subject }: { subject: EventEmitter }) => {
           <Text color="redBright">●</Text> - error
         </Text>
       </Box>
-      <Box borderColor="yellowBright" borderStyle="single" paddingX={1}>
+      <Box borderColor="yellowBright" paddingX={1}>
         {state.init ? (
           <Text>
             {state.bit.map((v, i) => (

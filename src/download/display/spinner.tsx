@@ -64,11 +64,11 @@ export const Spinner = ({ subject }: { subject: EventEmitter }) => {
   return (
     <Box flexDirection="column">
       <Text>
-        <Text color="greenBright">{SPINNER_GRAPH[state.spin]} </Text>
+        <Text color="yellow">{SPINNER_GRAPH[state.spin]} </Text>
         <Text color="greenBright">
           [{state.index + 1}/{state.total}]
         </Text>
-        <Text>{state.title}</Text>
+        <Text color="gray"> {state.title}</Text>
       </Text>
     </Box>
   );

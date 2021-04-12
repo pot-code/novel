@@ -1,10 +1,10 @@
-import { existsSync } from 'fs';
+import { existsSync, mkdirSync } from 'fs';
 import { Instance, render } from 'ink';
 import inquirer from 'inquirer';
 import { Browser } from 'puppeteer-core';
 import React from 'react';
-import { DIAGNOSE_PATH } from '../constants';
 
+import { DIAGNOSE_PATH } from '../constants';
 import { getBrowser, saveScreenshots } from '../util/browser';
 import { log } from '../util/log';
 import { DownloadConfig, loadConfig } from './config';
@@ -55,7 +55,7 @@ export async function download(
   try {
     browser = await getBrowser(headless);
   } catch (error) {
-    logger.error({ error: error.message }, 'open browser');
+    logger.error({ error: error.message }, 'failed to open browser');
     throw error;
   }
 
@@ -111,6 +111,9 @@ export async function download(
   } catch (error) {
     ui.clear();
     logger.info({ path: DIAGNOSE_PATH }, 'writing screenshots');
+    if (!existsSync(DIAGNOSE_PATH)) {
+      mkdirSync(DIAGNOSE_PATH);
+    }
     try {
       await saveScreenshots(browser, DIAGNOSE_PATH);
     } catch (se) {

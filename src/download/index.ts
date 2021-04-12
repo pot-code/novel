@@ -7,11 +7,10 @@ import yargs from 'yargs/yargs';
 import { download } from './download';
 import template from './template.json';
 import { getLogDst, log, setLevel } from '../util/log';
-import { DIAGNOSE_PATH } from '../constants';
 
 const argSchema = Joi.object({
   worker: Joi.number().integer().min(0),
-  timeout: Joi.number().integer().min(1000),
+  timeout: Joi.number().integer().min(800),
 }).unknown(true);
 
 yargs(hideBin(process.argv))
@@ -20,7 +19,7 @@ yargs(hideBin(process.argv))
   .alias('version', 'v')
   .command(
     'download',
-    'download novel with given config',
+    'download novel with the given config',
     (yargs) =>
       yargs
         .option('config', {
@@ -37,7 +36,7 @@ yargs(hideBin(process.argv))
         .option('template', {
           alias: 'T',
           type: 'boolean',
-          describe: 'export config template(default to stdout)',
+          describe: 'export config template.(default to stdout)',
         })
         .option('worker', {
           alias: 'w',
@@ -97,15 +96,8 @@ yargs(hideBin(process.argv))
         setLevel('debug');
       }
 
-      if (!fs.existsSync(DIAGNOSE_PATH)) {
-        fs.mkdirSync(DIAGNOSE_PATH);
-      }
-
       try {
         await download(configPath, worker, out, headless, timeout);
-        fs.rmdirSync(DIAGNOSE_PATH, {
-          recursive: true,
-        });
         fs.rmSync(getLogDst());
       } catch (error) {
         log.error({ stack: error.stack }, error.message);

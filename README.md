@@ -11,6 +11,8 @@
 ```bash
 git clone https://github.com/pot-code/novel.git
 cd novel
+npm install
+npm run build
 npm i -g ./
 ```
 
