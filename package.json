@@ -15,7 +15,7 @@
   },
   "name": "@pot-code/novel",
   "version": "2.0.0",
-  "description": "A CLI util for novel",
+  "description": "A cli util for novel",
   "bin": {
     "novel": "dist/index.js"
   },
@@ -23,12 +23,16 @@
     "type": "git",
     "url": "https://github.com/pot-code/novel.git"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "dev": "tsc --watch",
-    "build": "tsc"
+    "build": "tsc",
+    "prepublish": "tsc"
   },
   "keywords": [
-    "CLI",
+    "cli",
     "novel"
   ],
   "author": "pot-code",
