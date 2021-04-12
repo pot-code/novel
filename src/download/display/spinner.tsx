@@ -2,9 +2,8 @@ import EventEmitter from 'events';
 import { Box, Text } from 'ink';
 import React, { useEffect, useReducer } from 'react';
 
+import { SPINNER_GRAPH } from '../../constants';
 import { DownloadInit, DownloadProgress } from '../types';
-
-const SPINNER_GRAPH = '←↖↑↗→↘↓↙';
 
 type SpinnerState = {
   spin: number;

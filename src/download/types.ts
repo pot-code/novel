@@ -13,7 +13,7 @@ export type DownloadInit = {
 };
 
 export interface Downloader extends EventEmitter {
-  download(): Promise<void>;
+  download(): Promise<void> | void;
 }
 
 export interface DataSource<T> {
@@ -21,7 +21,7 @@ export interface DataSource<T> {
 }
 
 export abstract class ObservableDownloader extends EventEmitter implements Downloader {
-  abstract download(): Promise<void>;
+  abstract download(): Promise<void> | void;
 }
 
 export abstract class ObservableDataSource<T> extends EventEmitter implements DataSource<T> {
