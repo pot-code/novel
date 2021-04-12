@@ -3,7 +3,13 @@ import { BaseLogger } from 'pino';
 import { sleep } from '../../util/common';
 import { log } from '../../util/log';
 import { DefaultContentExtractor } from '../extract';
-import { DataSource, DownloadProgress, ObservableDownloader, ResultWriter } from '../types';
+import {
+  DownloadInit,
+  DownloadProgress,
+  ObservableDataSource,
+  ObservableDownloader,
+  ResultWriter,
+} from '../types';
 
 export class SingleThreadDownloader extends ObservableDownloader {
   private logger: BaseLogger;
@@ -13,13 +19,18 @@ export class SingleThreadDownloader extends ObservableDownloader {
    * @param out write out
    */
   constructor(
-    private readonly dataSource: DataSource<Promise<string>>,
+    private readonly dataSource: ObservableDataSource<Promise<string>>,
     private readonly extractor: DefaultContentExtractor,
     private readonly writer: ResultWriter,
     private readonly url: string,
+    private readonly skip: number,
+    private readonly limit: number,
     private readonly delay: number,
   ) {
     super();
+    dataSource.once('init', (data: DownloadInit) => {
+      this.emit('init', { total: Math.min(data.total, this.limit) } as DownloadInit);
+    });
     this.logger = log.child({ module: SingleThreadDownloader.name });
   }
 
@@ -27,7 +38,7 @@ export class SingleThreadDownloader extends ObservableDownloader {
     const dataSource = this.dataSource;
     const writer = this.writer;
 
-    let count = 0;
+    let index = 0;
     try {
       while (true) {
         const url = await dataSource.next();
@@ -36,31 +47,38 @@ export class SingleThreadDownloader extends ObservableDownloader {
           break;
         }
 
-        if (writer.exists(count)) {
-          this.logger.info({ index: count }, 'skipping part');
-          this.emit('progress', {
-            index: count,
-            title: 'skip',
-          } as DownloadProgress);
-          count++;
+        if (index < this.skip) {
+          index++;
           continue;
         }
 
-        const res = await this.extractor.extract(url);
-        writer.writePart(count, res);
-        this.emit('progress', {
-          index: count,
-          title: res[0],
-        } as DownloadProgress);
-        await sleep(this.delay);
-        count++;
+        if (writer.exists(index)) {
+          this.logger.info({ index: index }, 'skipping part');
+          this.emit('progress', {
+            index: index - this.skip,
+            title: 'skip',
+          } as DownloadProgress);
+        } else {
+          const res = await this.extractor.extract(url);
+          writer.writePart(index, res);
+          this.emit('progress', {
+            index: index - this.skip,
+            title: res[0],
+          } as DownloadProgress);
+          await sleep(this.delay);
+        }
+
+        index++;
+        if (index - this.skip >= this.limit) {
+          break;
+        }
       }
     } catch (error) {
       this.logger.error({ error: error.message }, 'failed to download');
       throw error;
     }
 
-    if (count === 0) {
+    if (index === 0) {
       return;
     }
 

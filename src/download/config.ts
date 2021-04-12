@@ -1,5 +1,6 @@
 import fs from 'fs';
 import Joi from 'joi';
+import { merge } from 'lodash';
 
 export type DownloadConfig = {
   url: string;
@@ -8,6 +9,7 @@ export type DownloadConfig = {
   title: string;
   content: string;
   limit: number;
+  skip: number;
   wait: number;
 };
 
@@ -21,13 +23,23 @@ const DownloadConfigSchema = Joi.object({
   }),
   title: Joi.string().required(),
   content: Joi.string().required(),
+  skip: Joi.number().integer().min(0),
   limit: Joi.number().integer().min(-1),
   wait: Joi.number().integer().min(0),
 });
 
+const defaultConfig: DownloadConfig = {
+  url: '',
+  title: '',
+  content: '',
+  limit: 0,
+  skip: 0,
+  wait: 100,
+};
+
 function loadConfig(path: string): DownloadConfig {
   const content = fs.readFileSync(path, 'utf-8');
-  const config = JSON.parse(content) as DownloadConfig;
+  let config = JSON.parse(content) as DownloadConfig;
 
   const { error } = DownloadConfigSchema.validate(config);
   if (error) {
@@ -35,6 +47,7 @@ function loadConfig(path: string): DownloadConfig {
   }
 
   config.limit = config.limit === -1 ? Infinity : config.limit;
+  config = merge(defaultConfig, config);
   return config;
 }
 

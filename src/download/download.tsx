@@ -46,6 +46,11 @@ export async function download(
     throw error;
   }
 
+  if (config.limit === 0) {
+    process.stdout.write("nothing to fetch, 'limit' is 0\n");
+    return;
+  }
+
   let browser: Browser;
   try {
     browser = await getBrowser(headless);
@@ -79,6 +84,8 @@ export async function download(
       writer,
       browser.wsEndpoint(),
       config.url,
+      config.skip,
+      config.limit,
       config.wait,
       timeout,
       config.content,
@@ -87,7 +94,15 @@ export async function download(
     ui = render(<Grid subject={fetcher} />);
   } else {
     const extractor = new DefaultContentExtractor(browser, config.title, config.content, timeout);
-    fetcher = new SingleThreadDownloader(dataSource, extractor, writer, config.url, config.wait);
+    fetcher = new SingleThreadDownloader(
+      dataSource,
+      extractor,
+      writer,
+      config.url,
+      config.skip,
+      config.limit,
+      config.wait,
+    );
     ui = render(<Spinner subject={fetcher} />);
   }
 

@@ -89,6 +89,8 @@ export class MultiThreadDownloader extends ObservableDownloader {
     private readonly writer: ResultWriter,
     private readonly browserEndpoint: string,
     private readonly url: string,
+    private readonly skip: number,
+    private readonly limit: number,
     private readonly delay: number,
     private readonly timeout: number,
     private readonly content: string,
@@ -96,7 +98,7 @@ export class MultiThreadDownloader extends ObservableDownloader {
   ) {
     super();
     dataSource.once('init', (data: DownloadInit) => {
-      this.emit('init', data);
+      this.emit('init', { total: Math.min(data.total, this.limit) } as DownloadInit);
     });
     this.manager = new WorkerManager();
     this.logger = log.child({ module: MultiThreadDownloader.name });
@@ -112,7 +114,7 @@ export class MultiThreadDownloader extends ObservableDownloader {
     try {
       this.writer.writePart(data.index, data.payload);
       this.emit('progress', {
-        index: data.index,
+        index: data.index - this.skip, // minus skip offset
         title: data.payload[0],
       } as DownloadProgress);
     } catch (error) {
@@ -152,11 +154,16 @@ export class MultiThreadDownloader extends ObservableDownloader {
           break;
         }
 
+        if (index < this.skip) {
+          index++;
+          continue;
+        }
+
         this.logger.debug({ url }, 'processing url');
         if (writer.exists(index)) {
           this.logger.info({ index: index }, 'skipping part');
           this.emit('progress', {
-            index: index,
+            index: index - this.skip,
             title: 'skip',
           } as DownloadProgress);
         } else {
@@ -166,7 +173,11 @@ export class MultiThreadDownloader extends ObservableDownloader {
             url: url,
           } as DownloadTask);
         }
+
         index++;
+        if (index - this.skip >= this.limit) {
+          break;
+        }
       }
     } catch (error) {
       this.logger.error({ error: error.message }, 'failed to download');

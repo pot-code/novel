@@ -53,7 +53,7 @@ export class DefaultResultWriter implements ResultWriter {
     });
     for (const p of list) {
       this.logger.debug({ dir, part: p }, 'merging parts');
-      appendFileSync(tmp, readFileSync(path.join(dir, p)).toString() + os.EOL);
+      appendFileSync(tmp, readFileSync(path.join(dir, p)).toString());
     }
 
     this.logger.debug({ old: tmp, new: out }, 'rename result');
@@ -69,9 +69,11 @@ export class DefaultResultWriter implements ResultWriter {
 
   private combineExtractResult(res: ExtractResult): string {
     const title = res[0];
-    const lines = res[1];
 
-    return title + os.EOL + lines.join(os.EOL) + os.EOL;
+    let lines = res[1];
+    lines = lines.map((line) => `\t${line}`);
+
+    return title + os.EOL + lines.join(os.EOL) + os.EOL + os.EOL;
   }
 
   private createDir(id: string) {
