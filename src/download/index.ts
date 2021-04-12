@@ -15,7 +15,6 @@ const argSchema = Joi.object({
 }).unknown(true);
 
 yargs(hideBin(process.argv))
-  // .usage(`Usage: $0 <command> [options]`)
   .version()
   .alias('help', 'h')
   .alias('version', 'v')

@@ -47,7 +47,7 @@ export class LinkedDataSource extends ObservableDataSource<Promise<string>> {
       const $next = document.querySelector(selector);
 
       if (!$next) {
-        return ''; // selector invalid or it's the end
+        return ''; // selector invalid or read ending
       }
 
       if ($next.tagName !== 'A') {

@@ -33,11 +33,6 @@ function getExecutablePath(): string {
   return '';
 }
 
-/**
- *
- * @param {*} headless
- * @param {*} exe_path chrome/chromium executable path
- */
 async function getBrowser(headless: boolean): Promise<Browser> {
   const exePath = getExecutablePath();
 

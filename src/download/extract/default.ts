@@ -38,9 +38,7 @@ export class DefaultContentExtractor {
   }
 
   /**
-   *
-   * @param url url contains content
-   * @returns extract result
+   * @param url page url
    */
   async extract(url: string): Promise<ExtractResult> {
     const page = await this.page;
