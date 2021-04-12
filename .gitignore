@@ -120,3 +120,4 @@ package-lock.json
 *.txt
 ./config.json
 *.jpeg
+.vscode
