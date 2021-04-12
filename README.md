@@ -1,6 +1,18 @@
+# Novel
+
 ## 描述
 
 有关小说的 CLI 工具
+
+## 安装
+
+>没有 npm install？没有
+
+```bash
+git clone https://github.com/pot-code/novel.git
+cd novel
+npm i -g ./
+```
 
 ## 使用
 

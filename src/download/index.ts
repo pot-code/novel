@@ -20,24 +20,24 @@ yargs(hideBin(process.argv))
   .alias('version', 'v')
   .command(
     'download',
-    'Download novel with given config',
+    'download novel with given config',
     (yargs) =>
       yargs
         .option('config', {
           alias: 'c',
           type: 'string',
-          describe: 'Config file path',
+          describe: 'config file path',
         })
         .option('out', {
           alias: 'o',
           type: 'string',
-          describe: `Save location(default to ${process.cwd()}/output.txt)`,
+          describe: `save location.(default to ${process.cwd()}/output.txt)`,
           default: 'output.txt',
         })
         .option('template', {
           alias: 'T',
           type: 'boolean',
-          describe: 'Export config template(default to stdout)',
+          describe: 'export config template(default to stdout)',
         })
         .option('worker', {
           alias: 'w',

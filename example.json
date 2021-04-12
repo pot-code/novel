@@ -4,7 +4,7 @@
   "list_selector": "#list > dl > dd > a",
   "title": "#box_con > div.bookname > h1",
   "content": "#content",
-  "limit": 10,
+  "limit": -1,
   "skip": 12,
   "wait": 100
 }

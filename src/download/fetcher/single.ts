@@ -61,7 +61,7 @@ export class SingleThreadDownloader extends ObservableDownloader {
           } as DownloadProgress);
         } else {
           const res = await this.extractor.extract(url);
-          writer.writePart(index, res);
+          writer.writePart(realIndex, res);
           this.emit('progress', {
             index: realIndex,
             title: res[0],
