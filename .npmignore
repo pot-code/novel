@@ -1,0 +1,8 @@
+.prettierrc
+.vscode
+
+src
+*.json
+tsconfig.json
+package-lock.json
+yarn.lock
