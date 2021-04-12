@@ -7,7 +7,7 @@ import { timestamp } from './common';
 export const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15';
 
-const exeSearchMap = {
+const platformExecutable = {
   win32: ['C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'],
   linux: [],
   darwin: [
@@ -23,8 +23,8 @@ function getExecutablePath(): string {
   }
 
   const platform = os.platform();
-  if (platform in exeSearchMap) {
-    const group = exeSearchMap[platform];
+  if (platform in platformExecutable) {
+    const group = platformExecutable[platform];
     const idx = group.findIndex(_predict);
     if (idx > -1) {
       return group[idx];
