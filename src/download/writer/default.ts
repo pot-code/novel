@@ -52,6 +52,7 @@ export class DefaultResultWriter implements ResultWriter {
     const out = this.out;
 
     let list = readdirSync(dir);
+    this.logger.debug('re-arrange parts');
     list.sort(function (a: string, b: string) {
       return parseInt(a, 10) - parseInt(b, 10);
     });
@@ -59,11 +60,11 @@ export class DefaultResultWriter implements ResultWriter {
       list = list.slice(0, this.limit);
     }
     for (const p of list) {
-      this.logger.debug({ dir, part: p }, 'merging parts');
+      this.logger.debug({ part: p }, 'merging parts');
       appendFileSync(tmp, readFileSync(path.join(dir, p)).toString());
     }
 
-    this.logger.debug({ old: tmp, new: out }, 'rename result');
+    this.logger.debug({ old: tmp, new: out }, 'rename output');
     renameSync(tmp, out);
 
     this.cleanup();
@@ -89,6 +90,7 @@ export class DefaultResultWriter implements ResultWriter {
     const name = md5.digest('hex');
 
     this.outDir = name;
+    this.logger.debug({ dir: name }, 'create temporary dir');
     if (existsSync(name)) {
       return;
     }
@@ -105,6 +107,7 @@ export class DefaultResultWriter implements ResultWriter {
     const dir = this.outDir;
     if (dir) {
       try {
+        this.logger.debug({ dir }, 'remove temporary dir');
         rmdirSync(dir, { recursive: true });
       } catch (error) {
         this.logger.error({ error: error.message, dir }, 'failed to clean dir');

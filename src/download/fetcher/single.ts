@@ -1,4 +1,5 @@
 import { BaseLogger } from 'pino';
+import { InternalError } from '../../errors';
 
 import { getRealIndex, sleep } from '../../util/common';
 import { log } from '../../util/log';
@@ -59,6 +60,7 @@ export class SingleThreadDownloader extends ObservableDownloader {
           this.pubProgress(realIndex, 'skip');
         } else {
           const res = await this.extractor.extract(url);
+
           writer.writePart(realIndex, res);
           this.pubProgress(realIndex, res[0]);
           await sleep(this.delay);
@@ -70,8 +72,8 @@ export class SingleThreadDownloader extends ObservableDownloader {
         }
       }
     } catch (error) {
-      this.logger.error({ error: error.message }, 'failed to download');
-      throw error;
+      this.logger.error({ stack: error.stack }, error.message);
+      throw new InternalError(error, 'failed to download');
     }
 
     if (index === 0) {
@@ -81,8 +83,8 @@ export class SingleThreadDownloader extends ObservableDownloader {
     try {
       writer.flush();
     } catch (error) {
-      this.logger.error({ error: error.message }, 'failed to write results');
-      throw error;
+      this.logger.error({ stack: error.stack }, error.message);
+      throw new InternalError(error, 'failed to write results');
     }
   }
 

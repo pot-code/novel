@@ -4,6 +4,7 @@ import path from 'path';
 import { BaseLogger } from 'pino';
 import { Worker } from 'worker_threads';
 
+import { InternalError } from '../../errors';
 import { getRealIndex } from '../../util/common';
 import { log } from '../../util/log';
 import {
@@ -178,8 +179,8 @@ export class MultiThreadDownloader extends ObservableDownloader {
         }
       }
     } catch (error) {
-      this.logger.error({ error: error.message }, 'failed to download');
-      throw error;
+      this.logger.error({ stack: error.stack }, error.message);
+      throw new InternalError(error, 'failed to download');
     } finally {
       await manager.close();
     }
@@ -190,8 +191,8 @@ export class MultiThreadDownloader extends ObservableDownloader {
     try {
       writer.flush();
     } catch (error) {
-      this.logger.error({ error: error.message }, 'failed to write results');
-      throw error;
+      this.logger.error({ stack: error.stack }, error.message);
+      throw new InternalError(error, 'failed to write results');
     }
   }
 

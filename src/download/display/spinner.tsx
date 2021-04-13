@@ -1,7 +1,8 @@
 import EventEmitter from 'events';
 import { Box, Text } from 'ink';
 import React, { useEffect, useReducer, useState } from 'react';
-import { SPINNER_GRAPH } from '../../constants';
+
+import { SPINNER_GRAPH, SPINNER_INTERVAL } from '../../constants';
 import { DownloadInit, DownloadProgress } from '../types';
 
 type SpinnerState = {
@@ -33,7 +34,7 @@ const Anime = () => {
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex((pv) => (pv + 1) % SPINNER_GRAPH.length);
-    }, 100);
+    }, SPINNER_INTERVAL);
     return () => {
       clearInterval(timer);
     };

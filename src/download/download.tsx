@@ -15,6 +15,7 @@ import { DefaultContentExtractor } from './extract';
 import { MultiThreadDownloader, SingleThreadDownloader } from './fetcher';
 import { Downloader, ObservableDataSource, ObservableDownloader } from './types';
 import { DefaultResultWriter } from './writer';
+import { CommandError, InternalError } from '../errors';
 
 export async function download(
   configPath: string,
@@ -41,8 +42,7 @@ export async function download(
   try {
     config = loadConfig(configPath);
   } catch (error) {
-    logger.error({ error: error.message }, 'failed to load config');
-    throw error;
+    throw new CommandError(`failed to load config: ${error.message}`);
   }
 
   if (config.limit === 0) {
@@ -54,8 +54,7 @@ export async function download(
   try {
     browser = await getBrowser(headless);
   } catch (error) {
-    logger.error({ error: error.message }, 'failed to open browser');
-    throw error;
+    throw new InternalError(error, 'failed to open browser');
   }
 
   async function handleTerm() {

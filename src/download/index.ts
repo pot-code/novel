@@ -1,12 +1,13 @@
+import fs from 'fs';
 import Joi from 'joi';
 import os from 'os';
-import fs from 'fs';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
+import { CommandError } from '../errors';
+import { getLogDst, log, setLevel } from '../util/log';
 import { download } from './download';
 import template from './template.json';
-import { getLogDst, log, setLevel } from '../util/log';
 
 const argSchema = Joi.object({
   worker: Joi.number().integer().min(0),
@@ -98,10 +99,17 @@ yargs(hideBin(process.argv))
 
       try {
         await download(configPath, worker, out, headless, timeout);
-        fs.rmSync(getLogDst());
+        if (debug) {
+          process.stderr.write(`debug log has been written to ${getLogDst()}\n`);
+        } else {
+          fs.rmSync(getLogDst());
+        }
       } catch (error) {
-        log.error({ stack: error.stack }, error.message);
-        process.stderr.write(`${error.message}, check ${getLogDst()} for more details`);
+        if (error instanceof CommandError) {
+          process.stderr.write(error.message);
+        } else {
+          process.stderr.write(`${error.message}, check ${getLogDst()} for more details`);
+        }
         process.stderr.write('\n');
       }
     },
