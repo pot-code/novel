@@ -52,7 +52,7 @@ function reducer(state: GridState, action: Action): GridState {
   }
 }
 
-export const Grid = ({ subject }: { subject: EventEmitter }) => {
+const Progress = ({ subject }: { subject: EventEmitter }) => {
   const [state, dispatch] = useReducer(reducer, {
     bit: [],
     title: '',
@@ -91,8 +91,24 @@ export const Grid = ({ subject }: { subject: EventEmitter }) => {
       subject.removeListener('init', init);
       subject.removeListener('fail', fail);
     };
-  });
+  }, [subject]);
 
+  return (
+    <Box borderColor="yellowBright" paddingX={1}>
+      {state.init ? (
+        <Text>
+          {state.bit.map((v, i) => (
+            <GridCell key={i} status={v} />
+          ))}
+        </Text>
+      ) : (
+        <Text>initializing...</Text>
+      )}
+    </Box>
+  );
+};
+
+export const Grid = ({ subject }: { subject: EventEmitter }) => {
   return (
     <Box flexDirection="column">
       <Box justifyContent="space-around" borderColor="blue" borderStyle="double">
@@ -106,17 +122,7 @@ export const Grid = ({ subject }: { subject: EventEmitter }) => {
           <Text color="redBright">●</Text> - error
         </Text>
       </Box>
-      <Box borderColor="yellowBright" paddingX={1}>
-        {state.init ? (
-          <Text>
-            {state.bit.map((v, i) => (
-              <GridCell key={i} status={v} />
-            ))}
-          </Text>
-        ) : (
-          <Text>initializing...</Text>
-        )}
-      </Box>
+      <Progress subject={subject} />
     </Box>
   );
 };

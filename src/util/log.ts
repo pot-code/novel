@@ -12,9 +12,8 @@ export const log = pino(
     base: {
       pid: process.pid,
     },
-    // prettyPrint: process.env.NODE_ENV !== 'production',
     messageKey: 'message',
-    timestamp: () => `,"timestamp":"${new Date().toISOString()}"`,
+    timestamp: () => `,"@timestamp":"${new Date().toISOString()}"`,
     formatters: {
       level: (label) => ({ 'log.level': label }),
     },

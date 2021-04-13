@@ -76,7 +76,6 @@ export async function download(
   try {
     await fetcher.download();
   } catch (error) {
-    ui.clear();
     logger.info({ path: DIAGNOSE_PATH }, 'writing screenshots');
     if (!existsSync(DIAGNOSE_PATH)) {
       mkdirSync(DIAGNOSE_PATH);
