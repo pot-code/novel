@@ -1,4 +1,5 @@
 import { existsSync, mkdirSync } from 'fs';
+import os from 'os';
 import { Instance, render } from 'ink';
 import inquirer from 'inquirer';
 import { Browser } from 'puppeteer-core';
@@ -12,7 +13,7 @@ import { LinkedDataSource, ListDataSource } from './datasource';
 import { Grid, Spinner } from './display';
 import { DefaultContentExtractor } from './extract';
 import { MultiThreadDownloader, SingleThreadDownloader } from './fetcher';
-import { ObservableDataSource, ObservableDownloader } from './types';
+import { Downloader, ObservableDataSource, ObservableDownloader } from './types';
 import { DefaultResultWriter } from './writer';
 
 export async function download(
@@ -64,43 +65,11 @@ export async function download(
   process.on('SIGINT', handleTerm);
   process.on('SIGTERM', handleTerm);
 
-  const writer = new DefaultResultWriter(config.url, output, config.limit);
-
-  let dataSource: ObservableDataSource<Promise<string>>;
-  if (config.list_selector) {
-    dataSource = new ListDataSource(browser, config.url, config.list_selector);
-  } else {
-    dataSource = new LinkedDataSource(browser, config.url, config.next_selector);
-  }
-
-  let fetcher: ObservableDownloader;
+  const fetcher = createDownloader(browser, config, workerNumber, timeout, output);
   let ui: Instance;
-  if (workerNumber > 1) {
-    fetcher = new MultiThreadDownloader(
-      workerNumber,
-      dataSource,
-      writer,
-      browser.wsEndpoint(),
-      config.url,
-      config.skip,
-      config.limit,
-      config.wait,
-      timeout,
-      config.content,
-      config.title,
-    );
+  if (workerNumber > 1 && os.platform() != 'win32') {
     ui = render(<Grid subject={fetcher} />);
   } else {
-    const extractor = new DefaultContentExtractor(browser, config.title, config.content, timeout);
-    fetcher = new SingleThreadDownloader(
-      dataSource,
-      extractor,
-      writer,
-      config.url,
-      config.skip,
-      config.limit,
-      config.wait,
-    );
     ui = render(<Spinner subject={fetcher} />);
   }
 
@@ -119,6 +88,54 @@ export async function download(
     }
     throw error;
   } finally {
+    ui.unmount();
+    ui.cleanup();
     await browser.close();
   }
+}
+
+function createDownloader(
+  browser: Browser,
+  config: DownloadConfig,
+  workerNumber: number,
+  timeout: number,
+  output: string,
+): Downloader {
+  const writer = new DefaultResultWriter(config.url, output, config.limit);
+
+  let dataSource: ObservableDataSource<Promise<string>>;
+  if (config.list_selector) {
+    dataSource = new ListDataSource(browser, config.url, config.list_selector);
+  } else {
+    dataSource = new LinkedDataSource(browser, config.url, config.next_selector);
+  }
+
+  let fetcher: ObservableDownloader;
+  if (workerNumber > 1) {
+    fetcher = new MultiThreadDownloader(
+      workerNumber,
+      dataSource,
+      writer,
+      browser.wsEndpoint(),
+      config.url,
+      config.skip,
+      config.limit,
+      config.wait,
+      timeout,
+      config.content,
+      config.title,
+    );
+  } else {
+    const extractor = new DefaultContentExtractor(browser, config.title, config.content, timeout);
+    fetcher = new SingleThreadDownloader(
+      dataSource,
+      extractor,
+      writer,
+      config.url,
+      config.skip,
+      config.limit,
+      config.wait,
+    );
+  }
+  return fetcher;
 }

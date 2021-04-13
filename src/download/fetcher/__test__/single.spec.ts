@@ -21,15 +21,16 @@ class MockExtractor implements ContentExtractor<Promise<ExtractResult>> {
     if (this.error) {
       throw new Error('error');
     }
-    return ['skip', ['', '']];
+    return ['title', ['', '']];
   }
 }
 
 class MockWriter implements ResultWriter {
+  constructor(private readonly _exists: boolean) {}
   writePart(index: number, res: ExtractResult): void {}
   flush(): void {}
   exists(index: number): boolean {
-    return false;
+    return this._exists;
   }
 }
 
@@ -45,7 +46,34 @@ describe('single thread downloading', function () {
     const dn = new SingleThreadDownloader(
       new MockDataSource(),
       new MockExtractor(false),
-      new MockWriter(),
+      new MockWriter(false),
+      '',
+      0,
+      0,
+      0,
+    );
+    dn.on('progress', (res: DownloadProgress) => {
+      expect(res).toEqual({ index: 0, title: 'title' } as DownloadProgress);
+    });
+    return dn.download();
+  });
+  it('error', function () {
+    const dn = new SingleThreadDownloader(
+      new MockDataSource(),
+      new MockExtractor(true),
+      new MockWriter(false),
+      '',
+      0,
+      0,
+      0,
+    );
+    return expect(dn.download()).rejects.toThrowError();
+  });
+  it('exists', function () {
+    const dn = new SingleThreadDownloader(
+      new MockDataSource(),
+      new MockExtractor(true),
+      new MockWriter(true),
       '',
       0,
       0,
@@ -55,17 +83,5 @@ describe('single thread downloading', function () {
       expect(res).toEqual({ index: 0, title: 'skip' } as DownloadProgress);
     });
     return dn.download();
-  });
-  it('error', function () {
-    const dn = new SingleThreadDownloader(
-      new MockDataSource(),
-      new MockExtractor(true),
-      new MockWriter(),
-      '',
-      0,
-      0,
-      0,
-    );
-    return expect(dn.download()).rejects.toThrowError();
   });
 });

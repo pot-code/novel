@@ -1,12 +1,10 @@
 import EventEmitter from 'events';
 import { Box, Text } from 'ink';
-import React, { useEffect, useReducer } from 'react';
-
+import React, { useEffect, useReducer, useState } from 'react';
 import { SPINNER_GRAPH } from '../../constants';
 import { DownloadInit, DownloadProgress } from '../types';
 
 type SpinnerState = {
-  spin: number;
   total: number;
   title: string;
   index: number;
@@ -20,7 +18,7 @@ function reducer(state: SpinnerState, action: Action): SpinnerState {
   switch (action.type) {
     case 'progress':
       const { index, title } = action.payload;
-      return { ...state, spin: (state.spin + 1) % SPINNER_GRAPH.length, index, title };
+      return { ...state, index, title };
     case 'init':
       const { total } = action.payload;
       return { ...state, total };
@@ -29,9 +27,22 @@ function reducer(state: SpinnerState, action: Action): SpinnerState {
   }
 }
 
-export const Spinner = ({ subject }: { subject: EventEmitter }) => {
+const Anime = () => {
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setIndex((pv) => (pv + 1) % SPINNER_GRAPH.length);
+    }, 100);
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+  return <Text color="yellow">{SPINNER_GRAPH[index]} </Text>;
+};
+
+const Title = ({ subject }: { subject: EventEmitter }) => {
   const [state, dispatch] = useReducer(reducer, {
-    spin: 0,
     total: -1,
     title: '',
     index: -1,
@@ -62,13 +73,21 @@ export const Spinner = ({ subject }: { subject: EventEmitter }) => {
   }, [subject]);
 
   return (
+    <>
+      <Text color="greenBright">
+        [{state.index + 1}/{state.total}]
+      </Text>
+      <Text color="gray"> {state.title}</Text>
+    </>
+  );
+};
+
+export const Spinner = ({ subject }: { subject: EventEmitter }) => {
+  return (
     <Box flexDirection="column">
       <Text>
-        <Text color="yellow">{SPINNER_GRAPH[state.spin]} </Text>
-        <Text color="greenBright">
-          [{state.index + 1}/{state.total}]
-        </Text>
-        <Text color="gray"> {state.title}</Text>
+        <Anime />
+        <Title subject={subject} />
       </Text>
     </Box>
   );

@@ -20,7 +20,7 @@ const platformExecutable = {
 };
 
 function getExecutablePath(): string {
-  function _predict(p: string) {
+  function _predict(p: string): boolean {
     p = path.resolve(p); // normalize the path regarding the platform
     return fs.existsSync(p);
   }
