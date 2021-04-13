@@ -34,6 +34,10 @@ export interface ResultWriter {
   exists(index: number): boolean;
 }
 
+export interface ContentExtractor<T> {
+  extract(url: string): T;
+}
+
 export type WorkerData = {
   endpoint: string;
   content: string;

@@ -116,10 +116,7 @@ export class MultiThreadDownloader extends ObservableDownloader {
 
     try {
       this.writer.writePart(realIndex, data.payload);
-      this.emit('progress', {
-        index: realIndex,
-        title: data.payload[0],
-      } as DownloadProgress);
+      this.pubProgress(realIndex, data.payload[0]);
     } catch (error) {
       this.logger.error(
         {
@@ -166,10 +163,7 @@ export class MultiThreadDownloader extends ObservableDownloader {
         this.logger.debug({ url }, 'processing url');
         if (writer.exists(realIndex)) {
           this.logger.info({ index: index }, 'skipping part');
-          this.emit('progress', {
-            index: realIndex,
-            title: 'skip',
-          } as DownloadProgress);
+          this.pubProgress(realIndex, 'skip');
         } else {
           const worker = await manager.getWorker();
           worker.postMessage({
@@ -199,6 +193,13 @@ export class MultiThreadDownloader extends ObservableDownloader {
       this.logger.error({ error: error.message }, 'failed to write results');
       throw error;
     }
+  }
+
+  private pubProgress(index: number, title: string) {
+    this.emit('progress', {
+      index: index,
+      title: title,
+    } as DownloadProgress);
   }
 
   private initWorkers() {

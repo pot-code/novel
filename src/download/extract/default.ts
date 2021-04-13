@@ -3,9 +3,9 @@ import { BaseLogger } from 'pino';
 import { Browser, Page } from 'puppeteer-core';
 
 import { USER_AGENT } from '../../util/browser';
-import { ExtractResult } from '../types';
+import { ContentExtractor, ExtractResult } from '../types';
 
-export class DefaultContentExtractor {
+export class DefaultContentExtractor implements ContentExtractor<Promise<ExtractResult>> {
   private page: Promise<Page>;
   private logger: BaseLogger;
   /**

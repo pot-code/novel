@@ -2,10 +2,11 @@ import { BaseLogger } from 'pino';
 
 import { getRealIndex, sleep } from '../../util/common';
 import { log } from '../../util/log';
-import { DefaultContentExtractor } from '../extract';
 import {
+  ContentExtractor,
   DownloadInit,
   DownloadProgress,
+  ExtractResult,
   ObservableDataSource,
   ObservableDownloader,
   ResultWriter,
@@ -20,7 +21,7 @@ export class SingleThreadDownloader extends ObservableDownloader {
    */
   constructor(
     private readonly dataSource: ObservableDataSource<Promise<string>>,
-    private readonly extractor: DefaultContentExtractor,
+    private readonly extractor: ContentExtractor<Promise<ExtractResult>>,
     private readonly writer: ResultWriter,
     private readonly url: string,
     private readonly skip: number,
@@ -55,17 +56,11 @@ export class SingleThreadDownloader extends ObservableDownloader {
         const realIndex = getRealIndex(index, this.skip);
         if (writer.exists(realIndex)) {
           this.logger.info({ index: index }, 'skipping part');
-          this.emit('progress', {
-            index: realIndex,
-            title: 'skip',
-          } as DownloadProgress);
+          this.pubProgress(realIndex, 'skip');
         } else {
           const res = await this.extractor.extract(url);
           writer.writePart(realIndex, res);
-          this.emit('progress', {
-            index: realIndex,
-            title: res[0],
-          } as DownloadProgress);
+          this.pubProgress(realIndex, res[0]);
           await sleep(this.delay);
         }
 
@@ -89,5 +84,12 @@ export class SingleThreadDownloader extends ObservableDownloader {
       this.logger.error({ error: error.message }, 'failed to write results');
       throw error;
     }
+  }
+
+  private pubProgress(index: number, title: string) {
+    this.emit('progress', {
+      index: index,
+      title: title,
+    } as DownloadProgress);
   }
 }
