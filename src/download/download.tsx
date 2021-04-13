@@ -8,12 +8,10 @@ import { DIAGNOSE_PATH } from '../constants';
 import { getBrowser, saveScreenshots } from '../util/browser';
 import { log } from '../util/log';
 import { DownloadConfig, loadConfig } from './config';
-import { LinkedDataSource } from './datasource/linked';
-import { ListDataSource } from './datasource/list';
+import { LinkedDataSource, ListDataSource } from './datasource';
 import { Grid, Spinner } from './display';
 import { DefaultContentExtractor } from './extract';
-import { MultiThreadDownloader } from './fetcher/multi';
-import { SingleThreadDownloader } from './fetcher/single';
+import { MultiThreadDownloader, SingleThreadDownloader } from './fetcher';
 import { ObservableDataSource, ObservableDownloader } from './types';
 import { DefaultResultWriter } from './writer';
 

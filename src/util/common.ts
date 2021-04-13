@@ -33,13 +33,15 @@ export function getRealIndex(index: number, skip: number): number {
 
 export function timestamp(): string {
   const now = new Date();
-  return `${now.getFullYear()}${padStart(now.getMonth() + 1, 2, '0')}${padStart(
+  return [
+    now.getFullYear(),
+    now.getMonth() + 1,
     now.getDate(),
-    2,
-    '0',
-  )}${padStart(now.getHours(), 2, '0')}${padStart(now.getMinutes(), 2, '0')}${padStart(
+    now.getHours(),
+    now.getMinutes(),
     now.getSeconds(),
-    2,
-    '0',
-  )}`;
+  ]
+    .map(String)
+    .map((v) => (v.length < 2 ? padStart(v, 2, '0') : v))
+    .join('');
 }

@@ -9,8 +9,9 @@ import { ObservableDataSource } from '../types';
 export class LinkedDataSource extends ObservableDataSource<Promise<string>> {
   private page: Promise<Page>;
   private nextUrl: string;
-  private proceed = 0;
   private logger: BaseLogger;
+
+  private proceed = 0;
   /**
    *
    * @param browser browser instance

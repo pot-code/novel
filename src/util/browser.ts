@@ -8,7 +8,10 @@ export const USER_AGENT =
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1.2 Safari/605.1.15';
 
 const platformExecutable = {
-  win32: ['C:/Program Files (x86)/Google/Chrome/Application/chrome.exe'],
+  win32: [
+    'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
+    'C:/Program Files/Google/Chrome/Application/chrome.exe',
+  ],
   linux: [],
   darwin: [
     '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -33,7 +36,7 @@ function getExecutablePath(): string {
   return '';
 }
 
-async function getBrowser(headless: boolean): Promise<Browser> {
+export async function getBrowser(headless: boolean): Promise<Browser> {
   const exePath = getExecutablePath();
 
   return await puppeteer.launch({
@@ -52,13 +55,13 @@ async function getBrowser(headless: boolean): Promise<Browser> {
   });
 }
 
-async function attachBrowser(endpoint: string): Promise<Browser> {
+export async function attachBrowser(endpoint: string): Promise<Browser> {
   return await puppeteer.connect({
     browserWSEndpoint: endpoint,
   });
 }
 
-async function saveScreenshots(browser: Browser, dir: string): Promise<void> {
+export async function saveScreenshots(browser: Browser, dir: string): Promise<void> {
   const pages = await browser.pages();
   for (let i = pages.length - 1; i >= 0; i--) {
     const url = pages[i].url();
@@ -71,5 +74,3 @@ async function saveScreenshots(browser: Browser, dir: string): Promise<void> {
     });
   }
 }
-
-export { getBrowser, attachBrowser, saveScreenshots };

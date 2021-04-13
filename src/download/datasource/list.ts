@@ -6,8 +6,8 @@ import { DownloadInit, ObservableDataSource } from '../types';
 
 export class ListDataSource extends ObservableDataSource<Promise<string>> {
   private page: Promise<Page>;
-  private cursor = 0;
 
+  private cursor = 0;
   private initialized = false;
   private list: string[] = [];
 

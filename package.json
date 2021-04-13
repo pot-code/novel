@@ -5,12 +5,10 @@
     "inquirer": "^8.0.0",
     "joi": "^17.4.0",
     "lodash": "^4.17.21",
-    "ora": "^5.4.0",
     "pino": "^6.11.2",
     "pino-pretty": "^4.7.1",
     "puppeteer-core": "^8.0.0",
     "react": "^16.0.0",
-    "rxjs": "^6.6.7",
     "yargs": "^16.2.0"
   },
   "name": "@pot-code/novel",
@@ -29,7 +27,8 @@
   "scripts": {
     "dev": "tsc --watch",
     "build": "tsc",
-    "prepublish": "tsc"
+    "prepublish": "tsc",
+    "test": "jest --passWithNoTests"
   },
   "keywords": [
     "cli",
@@ -38,16 +37,22 @@
   "author": "pot-code",
   "license": "MIT",
   "devDependencies": {
+    "@babel/core": "^7.13.15",
+    "@babel/preset-env": "^7.13.15",
+    "@babel/preset-typescript": "^7.13.0",
     "@types/inquirer": "^7.3.1",
+    "@types/jest": "^26.0.22",
     "@types/lodash": "^4.14.168",
     "@types/pino": "^6.3.7",
     "@types/react": "^17.0.3",
     "@types/yargs": "^16.0.1",
     "@typescript-eslint/eslint-plugin": "^4.21.0",
     "@typescript-eslint/parser": "^4.21.0",
+    "babel-jest": "^26.6.3",
     "eslint": "^7.24.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-prettier": "^3.3.1",
+    "jest": "^26.6.3",
     "prettier": "^2.2.1",
     "typescript": "^4.2.4"
   }
