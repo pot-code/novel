@@ -1,6 +1,6 @@
 import { BaseLogger } from 'pino';
-import { InternalError } from '../../errors';
 
+import { InternalError } from '../../errors';
 import { getRealIndex, sleep } from '../../util/common';
 import { log } from '../../util/log';
 import {
@@ -44,7 +44,6 @@ export class SingleThreadDownloader extends ObservableDownloader {
     try {
       while (true) {
         const url = await dataSource.next();
-        this.logger.debug({ url }, 'processing url');
         if (url === '') {
           break;
         }
@@ -56,7 +55,7 @@ export class SingleThreadDownloader extends ObservableDownloader {
 
         const realIndex = getRealIndex(index, this.skip);
         if (writer.exists(realIndex)) {
-          this.logger.info({ index: index }, 'skipping part');
+          this.logger.info({ index: realIndex }, 'skipping part');
           this.pubProgress(realIndex, 'skip');
         } else {
           const res = await this.extractor.extract(url);

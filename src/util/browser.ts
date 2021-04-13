@@ -36,12 +36,20 @@ function getExecutablePath(): string {
   return '';
 }
 
+/**
+ * return browser instance
+ * **be sure to handle the INT/TERM signals yourself**
+ * @param headless headless mode
+ * @returns browser to be resolved
+ */
 export async function getBrowser(headless: boolean): Promise<Browser> {
   const exePath = getExecutablePath();
 
   return await puppeteer.launch({
     headless,
     executablePath: exePath,
+    handleSIGINT: false,
+    handleSIGTERM: false,
     args: [
       '--no-sandbox',
       '--disable-setuid-sandbox',

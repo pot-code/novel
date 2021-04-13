@@ -102,7 +102,7 @@ yargs(hideBin(process.argv))
         if (debug) {
           process.stderr.write(`debug log has been written to ${getLogDst()}\n`);
         } else {
-          fs.rmSync(getLogDst());
+          fs.rmSync(getLogDst(), { force: true });
         }
       } catch (error) {
         if (error instanceof CommandError) {

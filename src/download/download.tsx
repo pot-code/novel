@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync } from 'fs';
+import { existsSync, mkdirSync, rmSync } from 'fs';
 import os from 'os';
 import { Instance, render } from 'ink';
 import inquirer from 'inquirer';
@@ -7,9 +7,9 @@ import React from 'react';
 
 import { DIAGNOSE_PATH } from '../constants';
 import { getBrowser, saveScreenshots } from '../util/browser';
-import { log } from '../util/log';
+import { getLogDst, log } from '../util/log';
 import { DownloadConfig, loadConfig } from './config';
-import { LinkedDataSource, ListDataSource } from './datasource';
+import { LinkedDataSource, ArrayDataSource } from './datasource';
 import { Grid, Spinner } from './display';
 import { DefaultContentExtractor } from './extract';
 import { MultiThreadDownloader, SingleThreadDownloader } from './fetcher';
@@ -58,12 +58,14 @@ export async function download(
     throw new InternalError(error, 'failed to open browser');
   }
 
-  async function handleTerm() {
-    await browser.close();
-    process.exit(1);
+  function handleInterrupt() {
+    rmSync(getLogDst(), { force: true });
+    browser.close().then(() => {
+      process.exit(1);
+    });
   }
-  process.on('SIGINT', handleTerm);
-  process.on('SIGTERM', handleTerm);
+  process.on('SIGINT', handleInterrupt);
+  process.on('SIGTERM', handleInterrupt);
 
   const fetcher = createDownloader(browser, config, workerNumber, timeout, output);
   let ui: Instance;
@@ -104,7 +106,7 @@ function createDownloader(
 
   let dataSource: ObservableDataSource<Promise<string>>;
   if (config.list_selector) {
-    dataSource = new ListDataSource(browser, config.url, config.list_selector);
+    dataSource = new ArrayDataSource(browser, config.url, config.list_selector);
   } else {
     dataSource = new LinkedDataSource(browser, config.url, config.next_selector);
   }

@@ -110,7 +110,7 @@ export class MultiThreadDownloader extends ObservableDownloader {
     const realIndex = data.index; // because the index is set as real before, the worker will keep it intact
     if (!data.payload) {
       this.failed++;
-      this.logger.error({ error: data.error, index: realIndex }, 'failed task');
+      this.logger.error({ error: data.error, index: realIndex }, 'worker error');
       this.emit('fail', realIndex);
       return;
     }
@@ -161,9 +161,8 @@ export class MultiThreadDownloader extends ObservableDownloader {
         }
 
         const realIndex = getRealIndex(index, this.skip);
-        this.logger.debug({ url }, 'processing url');
         if (writer.exists(realIndex)) {
-          this.logger.info({ index: index }, 'skipping part');
+          this.logger.info({ index: realIndex }, 'skipping part');
           this.pubProgress(realIndex, 'skip');
         } else {
           const worker = await manager.getWorker();

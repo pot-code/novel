@@ -1,6 +1,7 @@
 import EventEmitter from 'events';
 import { Box, Text } from 'ink';
 import React, { useEffect, useReducer } from 'react';
+
 import { DownloadInit, DownloadProgress } from '../types';
 
 const GridCell = ({ status }: { status: number }) => {

@@ -1,2 +1,2 @@
 export * from './linked';
-export * from './list';
+export * from './array';

@@ -4,7 +4,7 @@ import { Browser, Page } from 'puppeteer-core';
 import { USER_AGENT } from '../../util/browser';
 import { DownloadInit, ObservableDataSource } from '../types';
 
-export class ListDataSource extends ObservableDataSource<Promise<string>> {
+export class ArrayDataSource extends ObservableDataSource<Promise<string>> {
   private page: Promise<Page>;
 
   private cursor = 0;

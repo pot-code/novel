@@ -12,8 +12,8 @@ import {
 import os from 'os';
 import path from 'path';
 import { BaseLogger } from 'pino';
-import { InternalError } from '../../errors';
 
+import { InternalError } from '../../errors';
 import { log } from '../../util/log';
 import { ExtractResult, ResultWriter } from '../types';
 
