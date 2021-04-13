@@ -12,6 +12,7 @@ import {
 import os from 'os';
 import path from 'path';
 import { BaseLogger } from 'pino';
+import { InternalError } from '../../errors';
 
 import { log } from '../../util/log';
 import { ExtractResult, ResultWriter } from '../types';
@@ -42,7 +43,7 @@ export class DefaultResultWriter implements ResultWriter {
       writeFileSync(file, data);
     } catch (error) {
       this.logger.error({ error: error.message, part: file }, 'failed to write part');
-      throw error;
+      throw new InternalError(error, 'failed to write part');
     }
   }
 
@@ -98,8 +99,8 @@ export class DefaultResultWriter implements ResultWriter {
     try {
       mkdirSync(name);
     } catch (error) {
-      this.logger.error({ error: error.message, dir: name }, 'failed to create dir');
-      throw error;
+      this.logger.error({ error: error.message, dir: name }, 'failed to create temporary dir');
+      throw new InternalError(error, 'failed to create temporary dir');
     }
   }
 
@@ -111,7 +112,7 @@ export class DefaultResultWriter implements ResultWriter {
         rmdirSync(dir, { recursive: true });
       } catch (error) {
         this.logger.error({ error: error.message, dir }, 'failed to clean dir');
-        throw error;
+        throw new InternalError(error, 'failed to clean dir');
       }
     }
   }

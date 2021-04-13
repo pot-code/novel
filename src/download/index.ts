@@ -110,6 +110,7 @@ yargs(hideBin(process.argv))
         } else {
           process.stderr.write(`${error.message}, check ${getLogDst()} for more details`);
         }
+        log.error({ stack: error.stack }, error.message);
         process.stderr.write('\n');
       }
     },

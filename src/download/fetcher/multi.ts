@@ -179,7 +179,6 @@ export class MultiThreadDownloader extends ObservableDownloader {
         }
       }
     } catch (error) {
-      this.logger.error({ stack: error.stack }, error.message);
       throw new InternalError(error, 'failed to download');
     } finally {
       await manager.close();
@@ -191,7 +190,6 @@ export class MultiThreadDownloader extends ObservableDownloader {
     try {
       writer.flush();
     } catch (error) {
-      this.logger.error({ stack: error.stack }, error.message);
       throw new InternalError(error, 'failed to write results');
     }
   }

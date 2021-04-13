@@ -54,6 +54,7 @@ export async function download(
   try {
     browser = await getBrowser(headless);
   } catch (error) {
+    logger.error({ stack: error.stack }, error.message);
     throw new InternalError(error, 'failed to open browser');
   }
 

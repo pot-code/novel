@@ -72,7 +72,6 @@ export class SingleThreadDownloader extends ObservableDownloader {
         }
       }
     } catch (error) {
-      this.logger.error({ stack: error.stack }, error.message);
       throw new InternalError(error, 'failed to download');
     }
 
@@ -83,7 +82,6 @@ export class SingleThreadDownloader extends ObservableDownloader {
     try {
       writer.flush();
     } catch (error) {
-      this.logger.error({ stack: error.stack }, error.message);
       throw new InternalError(error, 'failed to write results');
     }
   }
