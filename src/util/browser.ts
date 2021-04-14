@@ -1,7 +1,9 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
+
 import puppeteer, { Browser } from 'puppeteer-core';
+
 import { timestamp } from './common';
 
 export const USER_AGENT =

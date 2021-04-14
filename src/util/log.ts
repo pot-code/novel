@@ -1,5 +1,6 @@
 import os from 'os';
 import path from 'path';
+
 import pino, { LevelWithSilent } from 'pino';
 
 import { timestamp } from './common';

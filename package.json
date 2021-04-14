@@ -28,7 +28,8 @@
     "dev": "tsc --watch -p tsconfig.dev.json",
     "build": "tsc",
     "prepublish": "tsc",
-    "test": "jest --passWithNoTests"
+    "test": "jest --passWithNoTests",
+    "lint": "eslint src"
   },
   "keywords": [
     "cli",

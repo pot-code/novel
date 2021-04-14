@@ -22,7 +22,7 @@ module.exports = {
       'error',
       {
         groups: ['builtin', 'external', 'sibling', 'parent'],
-        'newlines-between': 'always-and-inside-groups',
+        'newlines-between': 'always',
       },
     ],
   },
