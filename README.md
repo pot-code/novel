@@ -4,6 +4,10 @@
 
 有关小说的 CLI 工具
 
+![multi-thread](./preview/m_d.gif)
+
+![single-thread](./preview/s_d.gif)
+
 ## 安装
 
 >没有 npm install？没有
@@ -12,7 +16,6 @@
 git clone https://github.com/pot-code/novel.git
 cd novel
 npm install
-npm run build
 npm i -g ./
 ```
 
@@ -21,10 +24,7 @@ npm i -g ./
 ```bash
 novel <command> [option]
 ```
-
-已有的 command：
-
-- download
+## command
 
 ### download
 

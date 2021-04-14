@@ -30,7 +30,7 @@ export async function download(
     const ans = await inquirer.prompt({
       type: 'confirm',
       name: 'overwrite',
-      message: `'${output}' already exists, overwrite?`,
+      message: `'${output}' already exists, overwrite`,
     });
     if (!ans.overwrite) {
       logger.info(`[skipped]'${output}' already exists`);
