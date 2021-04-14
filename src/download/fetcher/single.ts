@@ -65,7 +65,7 @@ export class SingleThreadDownloader extends ObservableDownloader {
         }
 
         index++;
-        if (index - this.skip >= this.limit) {
+        if (index >= this.limit) {
           break;
         }
       }

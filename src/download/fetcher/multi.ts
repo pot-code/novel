@@ -6,7 +6,6 @@ import { isObject } from 'lodash';
 import { BaseLogger } from 'pino';
 
 import { InternalError } from '../../errors';
-import { getRealIndex } from '../../util/common';
 import { log } from '../../util/log';
 import {
   DownloadInit,
@@ -108,21 +107,21 @@ export class MultiThreadDownloader extends ObservableDownloader {
   }
 
   onWorkerResponse = (data: WorkerResponse) => {
-    const realIndex = data.index; // because the index is set as real before, the worker will keep it intact
+    const index = data.index; // because the index is set as real before, the worker will keep it intact
     if (!data.payload) {
       this.failed++;
-      this.logger.error({ error: data.error, index: realIndex }, 'worker error');
-      this.emit('fail', realIndex);
+      this.logger.error({ error: data.error, index: index }, 'worker error');
+      this.emit('fail', index);
       return;
     }
 
     try {
-      this.writer.writePart(realIndex, data.payload);
-      this.pubProgress(realIndex, data.payload[0]);
+      this.writer.writePart(index, data.payload);
+      this.pubProgress(index, data.payload[0]);
     } catch (error) {
       this.logger.error(
         {
-          index: realIndex,
+          index: index,
           error: error.message,
           stack: error.stack,
         },
@@ -146,7 +145,7 @@ export class MultiThreadDownloader extends ObservableDownloader {
       this.logger.error({ stack: error.stack, message: error.message }, 'worker error');
     });
 
-    let index = 0;
+    let index = this.skip > 0 ? -this.skip : 0;
     try {
       while (loop) {
         const url = await dataSource.next();
@@ -156,25 +155,24 @@ export class MultiThreadDownloader extends ObservableDownloader {
           break;
         }
 
-        if (index < this.skip) {
+        if (index < 0) {
           index++;
           continue;
         }
 
-        const realIndex = getRealIndex(index, this.skip);
-        if (writer.exists(realIndex)) {
-          this.logger.info({ index: realIndex }, 'skipping part');
-          this.pubProgress(realIndex, 'skip');
+        if (writer.exists(index)) {
+          this.logger.info({ index: index }, 'skipping part');
+          this.pubProgress(index, 'skip');
         } else {
           const worker = await manager.getWorker();
           worker.postMessage({
-            index: realIndex,
+            index: index,
             url: url,
           } as DownloadTask);
         }
 
         index++;
-        if (index - this.skip >= this.limit) {
+        if (index >= this.limit) {
           break;
         }
       }

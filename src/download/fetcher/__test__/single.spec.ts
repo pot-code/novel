@@ -1,4 +1,5 @@
 import { rmSync, existsSync } from 'fs';
+
 import { getLogDst } from '../../../util/log';
 import {
   ContentExtractor,
@@ -69,7 +70,7 @@ describe('single thread downloading', function () {
     );
     return expect(dn.download()).rejects.toThrowError();
   });
-  it('exists', function () {
+  it('skip progress', function () {
     const dn = new SingleThreadDownloader(
       new MockDataSource(),
       new MockExtractor(true),
@@ -81,6 +82,21 @@ describe('single thread downloading', function () {
     );
     dn.on('progress', (res: DownloadProgress) => {
       expect(res).toEqual({ index: 0, title: 'skip' } as DownloadProgress);
+    });
+    return dn.download();
+  });
+  it('correct index value', function () {
+    const dn = new SingleThreadDownloader(
+      new MockDataSource(),
+      new MockExtractor(false),
+      new MockWriter(false),
+      '',
+      1,
+      1,
+      0,
+    );
+    dn.on('progress', (res: DownloadProgress) => {
+      expect(res).toEqual({ index: 0, title: 'title' } as DownloadProgress);
     });
     return dn.download();
   });

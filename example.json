@@ -1,10 +1,10 @@
 {
-  "url": "https://www.xbiquge.cc/book/21269/",
+  "url": "https://www.xbiquge.cc/book/52318/",
   "next_selector": "#webPage > a:nth-child(12)",
   "list_selector": "#list > dl > dd > a",
   "title": "#box_con > div.bookname > h1",
   "content": "#content",
-  "limit": -1,
+  "limit": 20,
   "skip": 12,
   "wait": 100
 }

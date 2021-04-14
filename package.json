@@ -25,7 +25,7 @@
     "dist"
   ],
   "scripts": {
-    "dev": "tsc --watch",
+    "dev": "tsc --watch -p tsconfig.dev.json",
     "build": "tsc",
     "prepublish": "tsc",
     "test": "jest --passWithNoTests"

@@ -10,6 +10,7 @@ import template from './template.json';
 
 import { CommandError } from '../errors';
 import { getLogDst, log, setLevel } from '../util/log';
+import { DIAGNOSE_PATH } from '../constants';
 
 const argSchema = Joi.object({
   worker: Joi.number().integer().min(0),
