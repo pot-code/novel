@@ -11,6 +11,7 @@ import {
 } from 'fs';
 import os from 'os';
 import path from 'path';
+
 import { BaseLogger } from 'pino';
 
 import { InternalError } from '../../errors';

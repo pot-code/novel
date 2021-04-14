@@ -1,13 +1,15 @@
 import fs from 'fs';
-import Joi from 'joi';
 import os from 'os';
+
+import Joi from 'joi';
 import { hideBin } from 'yargs/helpers';
 import yargs from 'yargs/yargs';
 
-import { CommandError } from '../errors';
-import { getLogDst, log, setLevel } from '../util/log';
 import { download } from './download';
 import template from './template.json';
+
+import { CommandError } from '../errors';
+import { getLogDst, log, setLevel } from '../util/log';
 
 const argSchema = Joi.object({
   worker: Joi.number().integer().min(0),

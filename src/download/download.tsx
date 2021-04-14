@@ -1,13 +1,11 @@
 import { existsSync, mkdirSync, rmSync } from 'fs';
 import os from 'os';
+
 import { Instance, render } from 'ink';
 import inquirer from 'inquirer';
 import { Browser } from 'puppeteer-core';
 import React from 'react';
 
-import { DIAGNOSE_PATH } from '../constants';
-import { getBrowser, saveScreenshots } from '../util/browser';
-import { getLogDst, log } from '../util/log';
 import { DownloadConfig, loadConfig } from './config';
 import { LinkedDataSource, ArrayDataSource } from './datasource';
 import { Grid, Spinner } from './display';
@@ -15,6 +13,10 @@ import { DefaultContentExtractor } from './extract';
 import { MultiThreadDownloader, SingleThreadDownloader } from './fetcher';
 import { Downloader, ObservableDataSource, ObservableDownloader } from './types';
 import { DefaultResultWriter } from './writer';
+
+import { getLogDst, log } from '../util/log';
+import { getBrowser, saveScreenshots } from '../util/browser';
+import { DIAGNOSE_PATH } from '../constants';
 import { CommandError, InternalError } from '../errors';
 
 export async function download(

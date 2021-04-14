@@ -1,5 +1,6 @@
-import { Browser } from 'puppeteer-core';
 import { parentPort, workerData } from 'worker_threads';
+
+import { Browser } from 'puppeteer-core';
 
 import { attachBrowser } from '../../util/browser';
 import { sleep } from '../../util/common';

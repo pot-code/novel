@@ -1,8 +1,9 @@
 import { EventEmitter } from 'events';
-import { isObject } from 'lodash';
 import path from 'path';
-import { BaseLogger } from 'pino';
 import { Worker } from 'worker_threads';
+
+import { isObject } from 'lodash';
+import { BaseLogger } from 'pino';
 
 import { InternalError } from '../../errors';
 import { getRealIndex } from '../../util/common';

@@ -1,7 +1,7 @@
 import { BaseLogger } from 'pino';
 
 import { InternalError } from '../../errors';
-import { getRealIndex, sleep } from '../../util/common';
+import { sleep } from '../../util/common';
 import { log } from '../../util/log';
 import {
   ContentExtractor,
@@ -40,7 +40,7 @@ export class SingleThreadDownloader extends ObservableDownloader {
     const dataSource = this.dataSource;
     const writer = this.writer;
 
-    let index = 0;
+    let index = this.skip > 0 ? -this.skip : 0;
     try {
       while (true) {
         const url = await dataSource.next();
@@ -48,20 +48,19 @@ export class SingleThreadDownloader extends ObservableDownloader {
           break;
         }
 
-        if (index < this.skip) {
+        if (index < 0) {
           index++;
           continue;
         }
 
-        const realIndex = getRealIndex(index, this.skip);
-        if (writer.exists(realIndex)) {
-          this.logger.info({ index: realIndex }, 'skipping part');
-          this.pubProgress(realIndex, 'skip');
+        if (writer.exists(index)) {
+          this.logger.info({ index: index }, 'skipping part');
+          this.pubProgress(index, 'skip');
         } else {
           const res = await this.extractor.extract(url);
 
-          writer.writePart(realIndex, res);
-          this.pubProgress(realIndex, res[0]);
+          writer.writePart(index, res);
+          this.pubProgress(index, res[0]);
           await sleep(this.delay);
         }
 
