@@ -76,7 +76,7 @@ class WorkerManager extends EventEmitter {
   }
 }
 
-// omit:
+// emit:
 // - progress
 // - fail
 // - init
