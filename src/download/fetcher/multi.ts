@@ -136,13 +136,14 @@ export class MultiThreadDownloader extends ObservableDownloader {
     const writer = this.writer;
 
     let loop = true;
+    let workerErr: Error;
 
     this.initWorkers();
 
     manager.on('data', this.onWorkerResponse);
     manager.on('error', (error) => {
       loop = false;
-      this.logger.error({ stack: error.stack, message: error.message }, 'worker error');
+      workerErr = error;
     });
 
     let index = this.skip > 0 ? -this.skip : 0;
@@ -182,9 +183,14 @@ export class MultiThreadDownloader extends ObservableDownloader {
       await manager.close();
     }
 
+    if (workerErr) {
+      throw new InternalError(workerErr, 'worker error');
+    }
+
     if (this.failed > 0) {
       throw new Error(`${this.failed} tasks failed`);
     }
+
     try {
       writer.flush();
     } catch (error) {
